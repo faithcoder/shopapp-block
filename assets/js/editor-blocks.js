@@ -51,9 +51,9 @@
 		{ label: 'You', icon: 'user', link: '', popup: 'you', visible: true, active: false }
 	];
 	var defaultBenefits = [
-		{ icon: 'truck', text: __('Free 2-day', 'shopapp-blocks') },
-		{ icon: 'rotate', text: __('60-day returns', 'shopapp-blocks') },
-		{ icon: 'shield', text: __('2-yr warranty', 'shopapp-blocks') }
+		{ icon: 'truck', text: __('Fast Shipping', 'shopapp-blocks') },
+		{ icon: 'star', text: __('Fresh Products', 'shopapp-blocks') },
+		{ icon: 'shield', text: __('Safe Food', 'shopapp-blocks') }
 	];
 
 	var supports = {
@@ -126,9 +126,9 @@
 		}
 		if (attrs.benefitOne || attrs.benefitTwo || attrs.benefitThree) {
 			return [
-				{ icon: 'truck', text: attrs.benefitOne || __('Free 2-day', 'shopapp-blocks') },
-				{ icon: 'rotate', text: attrs.benefitTwo || __('60-day returns', 'shopapp-blocks') },
-				{ icon: 'shield', text: attrs.benefitThree || __('2-yr warranty', 'shopapp-blocks') }
+				{ icon: 'truck', text: attrs.benefitOne || __('Fast Shipping', 'shopapp-blocks') },
+				{ icon: 'star', text: attrs.benefitTwo || __('Fresh Products', 'shopapp-blocks') },
+				{ icon: 'shield', text: attrs.benefitThree || __('Safe Food', 'shopapp-blocks') }
 			];
 		}
 		return defaultBenefits;
@@ -213,9 +213,9 @@
 			showRatings: { type: 'boolean', default: true },
 			showCategory: { type: 'boolean', default: true },
 			showOnSale: { type: 'boolean', default: true },
-			benefitOne: { type: 'string', default: 'Free 2-day' },
-			benefitTwo: { type: 'string', default: '60-day returns' },
-			benefitThree: { type: 'string', default: '2-yr warranty' },
+			benefitOne: { type: 'string', default: 'Fast Shipping' },
+			benefitTwo: { type: 'string', default: 'Fresh Products' },
+			benefitThree: { type: 'string', default: 'Safe Food' },
 			benefits: { type: 'array', default: [] },
 			benefitAlignment: { type: 'string', default: 'center' },
 			benefitBackground: { type: 'string', default: '' },

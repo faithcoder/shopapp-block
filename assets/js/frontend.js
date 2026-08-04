@@ -391,10 +391,10 @@
 					'<img alt="">' +
 					'<div><h3></h3><p></p><span class="shopapp-checkout-line__price"></span></div>' +
 					'<div class="shopapp-qty">' +
-					'<button type="button" data-shopapp-qty="-1" aria-label="Decrease">-</button>' +
-					'<strong>' + Number(line.quantity || 0) + '</strong>' +
-					'<button type="button" data-shopapp-qty="1" aria-label="Increase">+</button>' +
-					'<button type="button" data-shopapp-remove aria-label="Remove">&times;</button>' +
+					'<button class="shopapp-qty__step" type="button" data-shopapp-qty="-1" aria-label="Decrease">-</button>' +
+					'<strong class="shopapp-qty__value">' + Number(line.quantity || 0) + '</strong>' +
+					'<button class="shopapp-qty__step" type="button" data-shopapp-qty="1" aria-label="Increase">+</button>' +
+					'<button class="shopapp-qty__remove" type="button" data-shopapp-remove aria-label="Remove">&times;</button>' +
 					'</div>';
 				item.querySelector('img').src = line.image || '';
 				item.querySelector('h3').textContent = line.name || '';
@@ -459,8 +459,50 @@
 			});
 			colorWrap.appendChild(button);
 		});
+		renderProductOptions(productSheet, product.options || []);
 		setProductSheetMinimized(false);
 		setHidden(productSheet, false);
+	}
+
+	function renderProductOptions(productSheet, options) {
+		var wrap = productSheet.querySelector('[data-shopapp-product-options]');
+		if (!wrap) {
+			return;
+		}
+
+		wrap.innerHTML = '';
+		wrap.hidden = !Array.isArray(options) || !options.length;
+
+		if (wrap.hidden) {
+			return;
+		}
+
+		options.forEach(function (option) {
+			var group = document.createElement('div');
+			var label = document.createElement('p');
+			var values = document.createElement('div');
+
+			group.className = 'shopapp-option-group';
+			label.className = 'shopapp-option-group__label';
+			label.textContent = option.name || '';
+			values.className = 'shopapp-option-group__values';
+
+			(option.values || []).forEach(function (value, index) {
+				var button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'shopapp-color-pill' + (index === 0 ? ' is-active' : '');
+				button.textContent = value;
+				button.addEventListener('click', function () {
+					values.querySelectorAll('.shopapp-color-pill').forEach(function (pill) { pill.classList.remove('is-active'); });
+					button.classList.add('is-active');
+				});
+				values.appendChild(button);
+			});
+
+			group.appendChild(label);
+			group.appendChild(values);
+			wrap.appendChild(group);
+		});
 	}
 
 	function updateProductSheetActions(productSheet, product) {

@@ -106,15 +106,15 @@ function shopapp_get_default_product_benefits() {
 	return array(
 		array(
 			'icon' => 'truck',
-			'text' => __( 'Free 2-day', 'shopapp-blocks' ),
+			'text' => __( 'Fast Shipping', 'shopapp-blocks' ),
 		),
 		array(
-			'icon' => 'rotate',
-			'text' => __( '60-day returns', 'shopapp-blocks' ),
+			'icon' => 'star',
+			'text' => __( 'Fresh Products', 'shopapp-blocks' ),
 		),
 		array(
 			'icon' => 'shield',
-			'text' => __( '2-yr warranty', 'shopapp-blocks' ),
+			'text' => __( 'Safe Food', 'shopapp-blocks' ),
 		),
 	);
 }
@@ -153,15 +153,15 @@ function shopapp_sanitize_product_benefits( $benefits, $fallback_attributes = ar
 		$benefits = array(
 			array(
 				'icon' => 'truck',
-				'text' => $fallback_attributes['benefitOne'] ?? __( 'Free 2-day', 'shopapp-blocks' ),
+				'text' => $fallback_attributes['benefitOne'] ?? __( 'Fast Shipping', 'shopapp-blocks' ),
 			),
 			array(
-				'icon' => 'rotate',
-				'text' => $fallback_attributes['benefitTwo'] ?? __( '60-day returns', 'shopapp-blocks' ),
+				'icon' => 'star',
+				'text' => $fallback_attributes['benefitTwo'] ?? __( 'Fresh Products', 'shopapp-blocks' ),
 			),
 			array(
 				'icon' => 'shield',
-				'text' => $fallback_attributes['benefitThree'] ?? __( '2-yr warranty', 'shopapp-blocks' ),
+				'text' => $fallback_attributes['benefitThree'] ?? __( 'Safe Food', 'shopapp-blocks' ),
 			),
 		);
 	}
@@ -210,9 +210,9 @@ function shopapp_sanitize_product_grid_attributes( $attributes ) {
 			'showRatings'                => true,
 			'showCategory'               => true,
 			'showOnSale'                 => true,
-			'benefitOne'                 => __( 'Free 2-day', 'shopapp-blocks' ),
-			'benefitTwo'                 => __( '60-day returns', 'shopapp-blocks' ),
-			'benefitThree'               => __( '2-yr warranty', 'shopapp-blocks' ),
+			'benefitOne'                 => __( 'Fast Shipping', 'shopapp-blocks' ),
+			'benefitTwo'                 => __( 'Fresh Products', 'shopapp-blocks' ),
+			'benefitThree'               => __( 'Safe Food', 'shopapp-blocks' ),
 			'benefits'                   => array(),
 			'benefitAlignment'           => 'center',
 			'benefitBackground'          => '',
@@ -409,6 +409,7 @@ function shopapp_get_product_data( $product ) {
 		'checkoutUrl' => esc_url_raw( function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : home_url( '/' ) ),
 		'permalink'   => esc_url_raw( $product->get_permalink() ),
 		'type'        => $product->get_type(),
+		'options'     => shopapp_get_product_option_groups( $product ),
 		'on_sale'     => $on_sale,
 	);
 }
@@ -501,6 +502,50 @@ function shopapp_get_product_color_labels( $product ) {
 	$colors = array_filter( array_map( 'sanitize_text_field', $colors ) );
 
 	return ! empty( $colors ) ? array_values( array_slice( $colors, 0, 3 ) ) : array( __( 'Standard', 'shopapp-blocks' ) );
+}
+
+/**
+ * Gets variable product option labels for the product popup.
+ *
+ * @param WC_Product $product Product object.
+ * @return array<int,array<string,mixed>>
+ */
+function shopapp_get_product_option_groups( $product ) {
+	if ( ! $product || ! $product->is_type( 'variable' ) || ! is_callable( array( $product, 'get_variation_attributes' ) ) ) {
+		return array();
+	}
+
+	$options = array();
+
+	foreach ( $product->get_variation_attributes() as $attribute_name => $values ) {
+		if ( empty( $values ) || ! is_array( $values ) ) {
+			continue;
+		}
+
+		$labels = array();
+
+		foreach ( $values as $value ) {
+			$label = $value;
+
+			if ( taxonomy_exists( $attribute_name ) ) {
+				$term = get_term_by( 'slug', $value, $attribute_name );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$label = $term->name;
+				}
+			}
+
+			$labels[] = sanitize_text_field( $label );
+		}
+
+		if ( ! empty( $labels ) ) {
+			$options[] = array(
+				'name'   => wc_attribute_label( $attribute_name, $product ),
+				'values' => array_values( array_unique( $labels ) ),
+			);
+		}
+	}
+
+	return $options;
 }
 
 /**
@@ -1176,14 +1221,15 @@ function shopapp_render_product_sheet( $attributes = array() ) {
 			<div class="shopapp-sheet__title-row">
 				<div>
 					<h2 id="shopapp-product-title"></h2>
+					<p class="shopapp-sheet__price"></p>
 					<p class="shopapp-sheet__tagline"></p>
 				</div>
-				<p class="shopapp-sheet__price"></p>
 			</div>
 			<?php if ( $attributes['showRatings'] ) : ?>
 				<p class="shopapp-sheet__rating shopapp-rating"></p>
 			<?php endif; ?>
 			<div class="shopapp-sheet__colors"></div>
+			<div class="shopapp-sheet__options" data-shopapp-product-options hidden></div>
 			<ul class="<?php echo esc_attr( $benefit_class ); ?>">
 				<?php foreach ( $attributes['benefits'] as $benefit ) : ?>
 					<li><?php echo shopapp_icon( $benefit['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span><?php echo esc_html( $benefit['text'] ); ?></span></li>
