@@ -980,6 +980,8 @@ function shopapp_render_product_card( $product, $attributes = array() ) {
 	$show_category = ! isset( $attributes['showCategory'] ) || (bool) $attributes['showCategory'];
 	$show_on_sale = ! isset( $attributes['showOnSale'] ) || (bool) $attributes['showOnSale'];
 	$product_url  = ! empty( $product['permalink'] ) ? $product['permalink'] : '';
+	$can_direct_add = empty( $product['type'] ) || 'simple' === $product['type'];
+	$add_label = $can_direct_add ? sprintf( __( 'Add %s to bag', 'shopapp-blocks' ), $product['name'] ) : sprintf( __( 'View options for %s', 'shopapp-blocks' ), $product['name'] );
 	?>
 	<article class="shopapp-product-card" data-shopapp-category="<?php echo esc_attr( sanitize_title( $product['category'] ) ); ?>" data-shopapp-product="<?php echo esc_attr( $product_json ); ?>">
 		<a class="shopapp-product-card__media" href="<?php echo esc_url( $product_url ? $product_url : '#' ); ?>" data-shopapp-open-product>
@@ -1010,7 +1012,7 @@ function shopapp_render_product_card( $product, $attributes = array() ) {
 			<?php endif; ?>
 			<h3><a href="<?php echo esc_url( $product_url ? $product_url : '#' ); ?>" data-shopapp-open-product><?php echo esc_html( $product['name'] ); ?></a></h3>
 			<p class="shopapp-price"><?php echo wp_kses_post( $product['price_html'] ); ?></p>
-			<button class="shopapp-card-add" type="button" data-shopapp-add data-product-id="<?php echo esc_attr( $product['id'] ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Add %s to bag', 'shopapp-blocks' ), $product['name'] ) ); ?>"><?php echo shopapp_icon( 'plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
+			<button class="shopapp-card-add" type="button" data-shopapp-add data-product-id="<?php echo esc_attr( $product['id'] ); ?>" aria-label="<?php echo esc_attr( $add_label ); ?>"><?php echo shopapp_icon( $can_direct_add ? 'plus' : 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 		</div>
 	</article>
 	<?php
@@ -1099,7 +1101,7 @@ function shopapp_render_bottom_nav( $attributes = array() ) {
 				<?php shopapp_render_checkout_menu_item( $menu_item, (bool) $attributes['showLabels'] ); ?>
 			<?php endforeach; ?>
 			<?php if ( $attributes['showCart'] ) : ?>
-				<button class="shopapp-bag-trigger" type="button" data-shopapp-open-checkout aria-label="<?php esc_attr_e( 'Open bag', 'shopapp-blocks' ); ?>"><?php echo shopapp_icon( 'bag' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span class="shopapp-bag-count">0</span></button>
+				<button class="shopapp-bag-trigger" type="button" data-shopapp-open-checkout aria-label="<?php esc_attr_e( 'Open bag', 'shopapp-blocks' ); ?>" aria-haspopup="dialog" aria-expanded="false"><?php echo shopapp_icon( 'bag' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span class="shopapp-bag-count">0</span></button>
 			<?php endif; ?>
 			<?php foreach ( array_slice( $menu_items, $split_index ) as $menu_item ) : ?>
 				<?php shopapp_render_checkout_menu_item( $menu_item, (bool) $attributes['showLabels'] ); ?>
@@ -1145,7 +1147,7 @@ function shopapp_render_checkout_menu_item( $item, $show_label ) {
 	}
 
 	printf(
-		'<button%1$s type="button" data-shopapp-nav-popup="%2$s" aria-label="%3$s">%4$s%5$s</button>',
+		'<button%1$s type="button" data-shopapp-nav-popup="%2$s" aria-label="%3$s" aria-haspopup="dialog" aria-expanded="false">%4$s%5$s</button>',
 		$classes, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		esc_attr( $item['popup'] ? $item['popup'] : 'shop' ),
 		esc_attr( $label ),
@@ -1163,12 +1165,12 @@ function shopapp_render_product_sheet( $attributes = array() ) {
 	$attributes = shopapp_sanitize_product_grid_attributes( $attributes );
 	$benefit_class = 'shopapp-benefits shopapp-benefits--' . $attributes['benefitAlignment'];
 	?>
-	<div class="shopapp-sheet" data-shopapp-product-sheet hidden>
-		<div class="shopapp-sheet__overlay" data-shopapp-close-sheet data-shopapp-close-nav></div>
-		<div class="shopapp-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-product-title">
+	<div class="shopapp-sheet" data-shopapp-product-sheet hidden aria-hidden="true">
+		<div class="shopapp-sheet__overlay" data-shopapp-close-sheet></div>
+		<div class="shopapp-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-product-title" aria-describedby="shopapp-product-status" tabindex="-1">
 			<div class="shopapp-sheet__handle"></div>
 			<div class="shopapp-popup-close-row">
-				<button type="button" data-shopapp-close-nav aria-label="<?php esc_attr_e( 'Close', 'shopapp-blocks' ); ?>">&times;</button>
+				<button type="button" data-shopapp-close-sheet aria-label="<?php esc_attr_e( 'Close product popup', 'shopapp-blocks' ); ?>">&times;</button>
 			</div>
 			<img class="shopapp-sheet__image" src="" alt="">
 			<div class="shopapp-sheet__title-row">
@@ -1191,6 +1193,7 @@ function shopapp_render_product_sheet( $attributes = array() ) {
 				<button class="shopapp-button shopapp-button--soft" type="button" data-shopapp-sheet-add><?php esc_html_e( 'Add to bag', 'shopapp-blocks' ); ?></button>
 				<button class="shopapp-button shopapp-button--ember" type="button" data-shopapp-sheet-buy><?php esc_html_e( 'Buy now', 'shopapp-blocks' ); ?></button>
 			</div>
+			<p id="shopapp-product-status" class="shopapp-popup-status" data-shopapp-product-status aria-live="polite"></p>
 		</div>
 	</div>
 	<?php
@@ -1220,14 +1223,14 @@ function shopapp_render_quick_checkout(
 		$classes .= ' shopapp-cart-drawer shopapp-cart-drawer--' . $cart_drawer_position;
 	}
 	?>
-	<div class="<?php echo esc_attr( $classes ); ?>" data-shopapp-checkout hidden>
+	<div class="<?php echo esc_attr( $classes ); ?>" data-shopapp-checkout hidden aria-hidden="true">
 		<div class="shopapp-checkout__overlay" data-shopapp-close-checkout data-shopapp-close-nav></div>
-		<div class="shopapp-checkout__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-checkout-title">
+		<div class="shopapp-checkout__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-checkout-title" tabindex="-1">
 			<div class="shopapp-sheet__handle"></div>
 			<div data-shopapp-checkout-review>
 				<div class="shopapp-popup-heading">
 					<h2 id="shopapp-checkout-title"><?php esc_html_e( 'Quick checkout', 'shopapp-blocks' ); ?></h2>
-					<button type="button" data-shopapp-close-nav aria-label="<?php esc_attr_e( 'Close', 'shopapp-blocks' ); ?>">&times;</button>
+					<button type="button" data-shopapp-close-checkout aria-label="<?php esc_attr_e( 'Close checkout popup', 'shopapp-blocks' ); ?>">&times;</button>
 				</div>
 				<p class="shopapp-checkout__intro"><?php esc_html_e( 'Review your bag before secure checkout.', 'shopapp-blocks' ); ?></p>
 				<ul class="shopapp-checkout__lines" data-shopapp-lines></ul>
@@ -1265,9 +1268,9 @@ function shopapp_render_quick_checkout(
  */
 function shopapp_render_nav_popup() {
 	?>
-	<div class="shopapp-checkout shopapp-nav-popup" data-shopapp-nav-sheet hidden>
+	<div class="shopapp-checkout shopapp-nav-popup" data-shopapp-nav-sheet hidden aria-hidden="true">
 		<div class="shopapp-checkout__overlay" data-shopapp-close-nav></div>
-		<div class="shopapp-checkout__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-nav-title">
+		<div class="shopapp-checkout__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-nav-title" tabindex="-1">
 			<div class="shopapp-sheet__handle"></div>
 			<div class="shopapp-nav-popup__heading">
 				<h2 id="shopapp-nav-title" data-shopapp-nav-title><?php esc_html_e( 'Shop', 'shopapp-blocks' ); ?></h2>

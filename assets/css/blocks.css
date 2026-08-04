@@ -122,6 +122,22 @@ body.shopapp-sheet-open {
   font: inherit;
 }
 
+.shopapp-storefront a:focus-visible,
+.shopapp-storefront button:focus-visible,
+.shopapp-storefront input:focus-visible,
+.shopapp-storefront [tabindex]:focus-visible {
+  outline: 3px solid var(--shopapp-ember);
+  outline-color: color-mix(in srgb, var(--shopapp-ember) 72%, #ffffff);
+  outline-offset: 4px;
+}
+
+.shopapp-storefront button,
+.shopapp-storefront [role="button"],
+.shopapp-storefront a,
+.shopapp-storefront input {
+  touch-action: manipulation;
+}
+
 .shopapp-icon-button {
   display: grid;
   width: 58px;
@@ -1075,6 +1091,14 @@ body.shopapp-sheet-open {
 }
 
 .shopapp-checkout__note {
+  margin: 12px 0 0;
+  color: var(--shopapp-muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.shopapp-popup-status {
+  min-height: 1.4em;
   margin: 12px 0 0;
   color: var(--shopapp-muted);
   text-align: center;
