@@ -1,16 +1,16 @@
 .shopapp-storefront {
-  --shopapp-bg: #0d0b09;
-  --shopapp-fg: #f6f0e9;
-  --shopapp-surface: #1b1815;
-  --shopapp-surface-2: #26211d;
-  --shopapp-muted: #aaa09a;
-  --shopapp-border: rgba(255, 255, 255, 0.12);
-  --shopapp-ember: #ff7b3a;
-  --shopapp-ember-soft: #ffa260;
+  --shopapp-bg: linear-gradient(135deg, #f8fff8 0%, #ebfff4 42%, #f7fbff 100%);
+  --shopapp-fg: #10251b;
+  --shopapp-surface: rgba(255, 255, 255, 0.72);
+  --shopapp-surface-2: rgba(236, 255, 244, 0.64);
+  --shopapp-muted: #5e7568;
+  --shopapp-border: rgba(20, 132, 74, 0.18);
+  --shopapp-ember: #10b981;
+  --shopapp-ember-soft: #84cc16;
   --shopapp-radius: 28px;
-  --shopapp-shadow: 0 22px 56px -26px rgba(0, 0, 0, 0.85);
-  --shopapp-ember-shadow: 0 18px 42px -18px rgba(255, 123, 58, 0.72);
-  color-scheme: dark;
+  --shopapp-shadow: 0 24px 70px -34px rgba(12, 90, 58, 0.42);
+  --shopapp-ember-shadow: 0 18px 42px -20px rgba(16, 185, 129, 0.62);
+  color-scheme: light;
 }
 
 .shopapp-storefront,
@@ -42,6 +42,7 @@
   width: 100%;
   padding: 34px clamp(24px, 3.6vw, 56px) 168px;
   background: var(--shopapp-bg);
+  backdrop-filter: blur(22px) saturate(150%);
   box-shadow: var(--shopapp-shadow);
   overflow: hidden;
 }
@@ -61,7 +62,8 @@
 .shopapp-storefront.has-text-color h1,
 .shopapp-storefront.has-text-color h2,
 .shopapp-storefront.has-text-color h3,
-.shopapp-storefront.has-text-color .shopapp-product-card h3 button {
+.shopapp-storefront.has-text-color .shopapp-product-card h3 button,
+.shopapp-storefront.has-text-color .shopapp-product-card h3 a {
   color: inherit;
 }
 
@@ -76,8 +78,9 @@
   gap: 24px;
   margin: -34px calc(clamp(24px, 3.6vw, 56px) * -1) 24px;
   padding: 34px clamp(24px, 3.6vw, 56px) 26px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: #171310;
+  border-bottom: 1px solid var(--shopapp-border);
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(22px) saturate(160%);
 }
 
 .shopapp-brand {
@@ -111,9 +114,10 @@
   height: 58px;
   place-items: center;
   color: var(--shopapp-fg);
-  border: 0;
+  border: 1px solid var(--shopapp-border);
   border-radius: 50%;
   background: var(--shopapp-surface-2);
+  box-shadow: 0 18px 34px -28px rgba(16, 185, 129, 0.75);
 }
 
 .shopapp-search {
@@ -127,7 +131,8 @@
   border: 1px solid var(--shopapp-border);
   border-radius: 999px;
   color: var(--shopapp-muted);
-  background: #171310;
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(20px) saturate(160%);
 }
 
 .shopapp-search input {
@@ -151,9 +156,9 @@
   padding: 32px;
   border-radius: 34px;
   background:
-    linear-gradient(90deg, rgba(13, 11, 9, 0.16), rgba(13, 11, 9, 0.78)),
-    radial-gradient(circle at 20% 20%, rgba(255, 162, 96, 0.45), transparent 28%),
-    linear-gradient(135deg, #2d231c, #090806 72%);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), rgba(240, 253, 244, 0.88)),
+    radial-gradient(circle at 18% 18%, rgba(132, 204, 22, 0.28), transparent 28%),
+    linear-gradient(135deg, #d9f99d, #bbf7d0 44%, #ecfeff 100%);
   background-position: center;
   background-size: cover;
   box-shadow: var(--shopapp-shadow);
@@ -197,7 +202,7 @@
 }
 
 .shopapp-button--ember {
-  color: #170f0a;
+  color: #ffffff;
   border-color: transparent;
   background: linear-gradient(135deg, var(--shopapp-ember), var(--shopapp-ember-soft));
   box-shadow: var(--shopapp-ember-shadow);
@@ -205,6 +210,7 @@
 
 .shopapp-button--soft {
   background: var(--shopapp-surface-2);
+  backdrop-filter: blur(16px) saturate(150%);
 }
 
 .shopapp-filter-list {
@@ -310,8 +316,10 @@
   left: 16px;
   padding: 8px 14px;
   border-radius: 999px;
-  color: var(--shopapp-ember);
-  background: rgba(13, 11, 9, 0.72);
+  color: #047857;
+  background: rgba(236, 253, 245, 0.86);
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  backdrop-filter: blur(14px) saturate(160%);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.16em;
@@ -320,7 +328,7 @@
 
 .shopapp-badge--sale {
   color: var(--shopapp-sale-color, var(--shopapp-ember));
-  background: var(--shopapp-sale-bg, rgba(13, 11, 9, 0.72));
+  background: var(--shopapp-sale-bg, rgba(236, 253, 245, 0.9));
 }
 
 .shopapp-badge--sale + .shopapp-badge {
@@ -368,7 +376,8 @@
   line-height: 1.15;
 }
 
-.shopapp-product-card h3 button {
+.shopapp-product-card h3 button,
+.shopapp-product-card h3 a {
   max-width: 100%;
   padding: 0;
   border: 0;
@@ -376,6 +385,7 @@
   background: transparent;
   font-weight: 800;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -412,7 +422,7 @@
   display: flex;
   width: fit-content;
   margin: 28px auto 0;
-  color: var(--shopapp-load-more-color, #170f0a);
+  color: var(--shopapp-load-more-color, #ffffff);
   background: var(--shopapp-load-more-bg, linear-gradient(135deg, var(--shopapp-ember), var(--shopapp-ember-soft)));
 }
 
@@ -436,7 +446,7 @@
 }
 
 .shopapp-pagination a.is-active {
-  color: var(--shopapp-pagination-active-color, #170f0a);
+  color: var(--shopapp-pagination-active-color, #ffffff);
   border-color: var(--shopapp-pagination-active-bg, var(--shopapp-ember));
   background: var(--shopapp-pagination-active-bg, var(--shopapp-ember));
 }
@@ -451,7 +461,7 @@
   place-items: center;
   border: 0;
   border-radius: 50%;
-  color: var(--shopapp-add-color, #170f0a);
+  color: var(--shopapp-add-color, #ffffff);
   background: var(--shopapp-add-bg, linear-gradient(135deg, var(--shopapp-ember), var(--shopapp-ember-soft)));
   cursor: pointer;
 }
@@ -466,11 +476,11 @@
   height: 42px;
   place-items: center;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(16, 185, 129, 0.24);
   border-radius: 50%;
-  color: #fff;
-  background: rgba(13, 11, 9, 0.7);
-  backdrop-filter: blur(10px);
+  color: var(--shopapp-fg);
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(14px) saturate(160%);
   cursor: pointer;
 }
 
@@ -505,9 +515,9 @@
   border: var(--shopapp-checkout-border-width, 1px) solid var(--shopapp-checkout-border-color, var(--shopapp-border));
   border-radius: var(--shopapp-checkout-radius, 38px);
   color: var(--shopapp-checkout-color, var(--shopapp-muted));
-  background: var(--shopapp-checkout-bg, linear-gradient(180deg, rgba(52, 43, 35, var(--shopapp-checkout-opacity, 0.94)), rgba(35, 29, 24, var(--shopapp-checkout-opacity, 0.94))));
+  background: var(--shopapp-checkout-bg, rgba(255, 255, 255, var(--shopapp-checkout-opacity, 0.94)));
   backdrop-filter: blur(var(--shopapp-checkout-blur, 20px)) saturate(var(--shopapp-checkout-saturate, 160%));
-  box-shadow: 0 26px 60px -26px rgba(0, 0, 0, 0.9), 0 16px 46px -28px rgba(255, 123, 58, 0.5);
+  box-shadow: 0 26px 60px -30px rgba(12, 90, 58, 0.34), 0 16px 46px -28px rgba(16, 185, 129, 0.5);
   transform: translateX(-50%);
 }
 
@@ -546,7 +556,7 @@
   height: var(--shopapp-checkout-cart-size, 88px);
   margin-top: var(--shopapp-checkout-cart-offset-y, -50px);
   border-radius: 50%;
-  color: var(--shopapp-checkout-cart-color, #170f0a) !important;
+  color: var(--shopapp-checkout-cart-color, #ffffff) !important;
   background: var(--shopapp-checkout-cart-bg, linear-gradient(135deg, var(--shopapp-ember), var(--shopapp-ember-soft))) !important;
   box-shadow: var(--shopapp-ember-shadow);
 }
@@ -593,8 +603,8 @@
   place-items: center;
   padding: 0 6px;
   border-radius: 999px;
-  color: var(--shopapp-checkout-count-color, var(--shopapp-fg));
-  background: var(--shopapp-checkout-count-bg, var(--shopapp-bg));
+  color: var(--shopapp-checkout-count-color, #ffffff);
+  background: var(--shopapp-checkout-count-bg, #064e3b);
   font-size: 12px;
 }
 
@@ -614,7 +624,8 @@
 .shopapp-checkout__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.76);
+  background: rgba(15, 118, 82, 0.18);
+  backdrop-filter: blur(8px);
 }
 
 .shopapp-sheet__panel,
@@ -629,12 +640,13 @@
   border: 1px solid var(--shopapp-border);
   border-radius: 34px 34px 0 0;
   background: var(--shopapp-surface);
+  backdrop-filter: blur(24px) saturate(170%);
   box-shadow: var(--shopapp-shadow);
   transform: translateX(-50%);
 }
 
 .shopapp-cart-drawer .shopapp-checkout__overlay {
-  background: rgba(0, 0, 0, 0.58);
+  background: rgba(15, 118, 82, 0.16);
 }
 
 .shopapp-cart-drawer .shopapp-checkout__panel {
@@ -690,7 +702,7 @@
   height: 8px;
   margin: 0 auto 18px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(16, 185, 129, 0.22);
 }
 
 .shopapp-sheet__image {
@@ -747,9 +759,9 @@
 }
 
 .shopapp-color-pill.is-active {
-  color: var(--shopapp-fg);
+  color: #047857;
   border-color: var(--shopapp-ember);
-  background: rgba(255, 123, 58, 0.12);
+  background: rgba(16, 185, 129, 0.12);
 }
 
 .shopapp-benefits {
@@ -842,8 +854,8 @@
   place-items: center;
   border: 0;
   border-radius: 50%;
-  color: var(--shopapp-fg);
-  background: var(--shopapp-bg);
+  color: #ffffff;
+  background: #047857;
 }
 
 .shopapp-checkout__coupon {
@@ -874,7 +886,7 @@
 
 .shopapp-checkout__coupon button {
   border-color: var(--shopapp-ember);
-  color: var(--shopapp-bg);
+  color: #ffffff;
   background: var(--shopapp-ember);
   font-weight: 800;
 }
@@ -1033,7 +1045,7 @@
 .shopapp-account-actions a:first-child,
 .shopapp-account-footer a:first-child {
   border-color: var(--shopapp-ember);
-  color: var(--shopapp-bg);
+  color: #ffffff;
   background: var(--shopapp-ember);
 }
 
@@ -1099,7 +1111,7 @@
   border: 1px solid var(--shopapp-border);
   border-radius: 50%;
   color: var(--shopapp-muted);
-  background: var(--shopapp-bg);
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .shopapp-nav-load-more {

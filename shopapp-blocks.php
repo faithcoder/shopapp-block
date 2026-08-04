@@ -76,6 +76,7 @@ function shopapp_blocks_register_assets() {
 			'productsApiUrl'    => esc_url_raw( rest_url( 'wc/store/v1/products' ) ),
 			'cartUrl'           => esc_url_raw( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' ) ),
 			'checkoutUrl'       => esc_url_raw( function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : home_url( '/' ) ),
+			'placeholderImage'  => esc_url_raw( function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'woocommerce_thumbnail' ) : SHOPAPP_BLOCKS_URL . 'assets/images/demo-pour.svg' ),
 			'currency'          => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$',
 			'addToCartNonce'    => wp_create_nonce( 'shopapp_blocks_add_to_cart' ),
 			'cartNonce'         => wp_create_nonce( 'shopapp_blocks_cart' ),
@@ -83,6 +84,7 @@ function shopapp_blocks_register_assets() {
 			'loadProductsNonce' => wp_create_nonce( 'shopapp_blocks_load_products' ),
 			'i18n'              => array(
 				'addToBag'        => __( 'Add to bag', 'shopapp-blocks' ),
+				'addedToBag'      => __( 'Added', 'shopapp-blocks' ),
 				'addedToSaved'    => __( 'Product saved.', 'shopapp-blocks' ),
 				'accountDetails'  => __( 'Account details', 'shopapp-blocks' ),
 				'addresses'       => __( 'Addresses', 'shopapp-blocks' ),

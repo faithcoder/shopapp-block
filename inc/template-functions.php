@@ -74,17 +74,23 @@ function shopapp_icon( $name ) {
 		'bell'      => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18H9"/><path d="M18 10a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
 		'card'      => '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>',
 		'check'     => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>',
+		'facebook'  => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h2V4h-3a5 5 0 0 0-5 5v3H6v4h2v4h4v-4h3l1-4h-4V9a1 1 0 0 1 1-1h1Z"/></svg>',
 		'heart'     => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>',
 		'home'      => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>',
+		'messenger' => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 1 4.7 7.3L4 20l1.3-3.4A7.8 7.8 0 0 1 4 12Z"/><path d="m7.5 13.5 3-3 2.8 2 3.2-3.2"/></svg>',
 		'minus'     => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
 		'plus'      => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
 		'rotate'    => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v7h7"/></svg>',
 		'search'    => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
 		'shield'    => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/></svg>',
 		'star'      => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2 2 9.3l6.9-1L12 2Z"/></svg>',
+		'tiktok'    => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v10.5a4.5 4.5 0 1 1-4-4.47"/><path d="M14 6a6 6 0 0 0 5 2"/></svg>',
 		'trash'     => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>',
 		'truck'     => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v11H3z"/><path d="M14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
 		'user'      => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+		'wechat'    => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 6a6.5 5 0 0 0-6.5 5 4.7 4.7 0 0 0 2.1 3.8L5.5 17l2.4-1.2a7.6 7.6 0 0 0 2.6.4"/><path d="M14.5 10a5.5 4.4 0 0 1 5.5 4.4 4.1 4.1 0 0 1-1.8 3.3l.5 2-2.1-1a6.5 6.5 0 0 1-2.1.3 5.5 4.4 0 0 1-5.5-4.6 5.5 4.4 0 0 1 5.5-4.4Z"/><path d="M8 10h.01M13 13.5h.01M16.5 13.5h.01"/></svg>',
+		'whatsapp'  => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.4-4A8 8 0 1 1 8 18.6L4 20Z"/><path d="M9 8.8c.3 3 2.2 5 5.2 6l1.3-1.4-2-1-1 .8a6 6 0 0 1-2.6-2.6l.8-1-1-2L9 8.8Z"/></svg>',
+		'youtube'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8.5A3 3 0 0 1 6.4 6h11.2a3 3 0 0 1 2.9 2.5A25 25 0 0 1 21 12a25 25 0 0 1-.5 3.5 3 3 0 0 1-2.9 2.5H6.4a3 3 0 0 1-2.9-2.5A25 25 0 0 1 3 12a25 25 0 0 1 .5-3.5Z"/><path d="m10 9 5 3-5 3V9Z"/></svg>',
 		'zap'       => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z"/></svg>',
 	);
 
@@ -587,7 +593,7 @@ function shopapp_get_default_checkout_menu_items() {
  * @return array<int,array<string,mixed>>
  */
 function shopapp_sanitize_checkout_menu_items( $items ) {
-	$allowed_icons = array( 'bag', 'bell', 'card', 'check', 'heart', 'home', 'search', 'shield', 'star', 'truck', 'user', 'zap' );
+	$allowed_icons = array( 'bag', 'bell', 'card', 'check', 'facebook', 'heart', 'home', 'messenger', 'search', 'shield', 'star', 'tiktok', 'truck', 'user', 'wechat', 'whatsapp', 'youtube', 'zap' );
 	$allowed_popups = array( 'shop', 'search', 'saved', 'you' );
 	$items = is_array( $items ) && ! empty( $items ) ? $items : shopapp_get_default_checkout_menu_items();
 	$clean = array();
@@ -655,6 +661,7 @@ function shopapp_sanitize_checkout_bar_attributes( $attributes ) {
 			'showLabels'         => true,
 			'showCart'           => true,
 			'showViewCartButton' => true,
+			'showCouponField'    => true,
 			'enableCartDrawer'   => false,
 			'cartDrawerPosition' => 'right',
 			'menuItems'          => array(),
@@ -703,6 +710,7 @@ function shopapp_sanitize_checkout_bar_attributes( $attributes ) {
 	$attributes['showLabels']         = (bool) $attributes['showLabels'];
 	$attributes['showCart']           = (bool) $attributes['showCart'];
 	$attributes['showViewCartButton'] = (bool) $attributes['showViewCartButton'];
+	$attributes['showCouponField']    = (bool) $attributes['showCouponField'];
 	$attributes['enableCartDrawer']   = (bool) $attributes['enableCartDrawer'];
 	$attributes['cartDrawerPosition'] = 'left' === sanitize_key( $attributes['cartDrawerPosition'] ) ? 'left' : 'right';
 	$attributes['menuItems']          = shopapp_sanitize_checkout_menu_items( $attributes['menuItems'] );
@@ -974,6 +982,7 @@ function shopapp_render_bottom_nav( $attributes = array() ) {
 		shopapp_render_quick_checkout(
 			$checkout_url,
 			(bool) $attributes['showViewCartButton'],
+			(bool) $attributes['showCouponField'],
 			(bool) $attributes['enableCartDrawer'],
 			$attributes['cartDrawerPosition']
 		);
@@ -1056,12 +1065,14 @@ function shopapp_render_product_sheet() {
  *
  * @param string $checkout_url          WooCommerce checkout URL.
  * @param bool   $show_view_cart_button Whether to show the View cart link.
+ * @param bool   $show_coupon_field     Whether to show the coupon field.
  * @param bool   $enable_cart_drawer    Whether to use a side drawer instead of the default bottom popup.
  * @param string $cart_drawer_position  Side drawer position.
  */
 function shopapp_render_quick_checkout(
 	$checkout_url,
 	$show_view_cart_button = true,
+	$show_coupon_field = true,
 	$enable_cart_drawer = false,
 	$cart_drawer_position = 'right'
 ) {
@@ -1081,12 +1092,14 @@ function shopapp_render_quick_checkout(
 				<h2 id="shopapp-checkout-title"><?php esc_html_e( 'Quick checkout', 'shopapp-blocks' ); ?></h2>
 				<p class="shopapp-checkout__intro"><?php esc_html_e( 'Review your bag before secure checkout.', 'shopapp-blocks' ); ?></p>
 				<ul class="shopapp-checkout__lines" data-shopapp-lines></ul>
+				<?php if ( $show_coupon_field ) : ?>
 				<form class="shopapp-checkout__coupon" data-shopapp-coupon-form>
 					<label class="screen-reader-text" for="shopapp-coupon-code"><?php esc_html_e( 'Coupon code', 'shopapp-blocks' ); ?></label>
 					<input id="shopapp-coupon-code" type="text" name="coupon" placeholder="<?php esc_attr_e( 'Coupon code', 'shopapp-blocks' ); ?>">
 					<button type="submit"><?php esc_html_e( 'Apply', 'shopapp-blocks' ); ?></button>
 					<p data-shopapp-coupon-status aria-live="polite"></p>
 				</form>
+				<?php endif; ?>
 				<dl class="shopapp-checkout__totals">
 					<div><dt><?php esc_html_e( 'Subtotal', 'shopapp-blocks' ); ?></dt><dd data-shopapp-subtotal>$0</dd></div>
 					<div data-shopapp-discount-row hidden><dt><?php esc_html_e( 'Discount', 'shopapp-blocks' ); ?></dt><dd data-shopapp-discount></dd></div>

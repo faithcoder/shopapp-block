@@ -161,6 +161,7 @@ function shopapp_register_blocks() {
 				'showLabels'         => array( 'type' => 'boolean', 'default' => true ),
 				'showCart'           => array( 'type' => 'boolean', 'default' => true ),
 				'showViewCartButton' => array( 'type' => 'boolean', 'default' => true ),
+				'showCouponField'    => array( 'type' => 'boolean', 'default' => true ),
 				'enableCartDrawer'   => array( 'type' => 'boolean', 'default' => false ),
 				'cartDrawerPosition' => array( 'type' => 'string', 'default' => 'right' ),
 				'menuItems'          => array( 'type' => 'array', 'default' => array() ),

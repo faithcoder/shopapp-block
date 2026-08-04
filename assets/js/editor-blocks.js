@@ -26,9 +26,15 @@
 		{ label: __('Bell', 'shopapp-blocks'), value: 'bell' },
 		{ label: __('Card', 'shopapp-blocks'), value: 'card' },
 		{ label: __('Check', 'shopapp-blocks'), value: 'check' },
+		{ label: __('Facebook', 'shopapp-blocks'), value: 'facebook' },
+		{ label: __('Messenger', 'shopapp-blocks'), value: 'messenger' },
 		{ label: __('Shield', 'shopapp-blocks'), value: 'shield' },
 		{ label: __('Star', 'shopapp-blocks'), value: 'star' },
+		{ label: __('TikTok', 'shopapp-blocks'), value: 'tiktok' },
 		{ label: __('Truck', 'shopapp-blocks'), value: 'truck' },
+		{ label: __('WeChat', 'shopapp-blocks'), value: 'wechat' },
+		{ label: __('WhatsApp', 'shopapp-blocks'), value: 'whatsapp' },
+		{ label: __('YouTube', 'shopapp-blocks'), value: 'youtube' },
 		{ label: __('Zap', 'shopapp-blocks'), value: 'zap' }
 	];
 	var checkoutPopupOptions = [
@@ -279,6 +285,7 @@
 			showLabels: { type: 'boolean', default: true },
 			showCart: { type: 'boolean', default: true },
 			showViewCartButton: { type: 'boolean', default: true },
+			showCouponField: { type: 'boolean', default: true },
 			enableCartDrawer: { type: 'boolean', default: false },
 			cartDrawerPosition: { type: 'string', default: 'right' },
 			menuItems: { type: 'array', default: [] },
@@ -322,6 +329,7 @@
 						el(ToggleControl, { label: __('Show labels', 'shopapp-blocks'), checked: attrs.showLabels !== false, onChange: setAttr(setAttributes, 'showLabels') }),
 						el(ToggleControl, { label: __('Show cart button', 'shopapp-blocks'), checked: attrs.showCart !== false, onChange: setAttr(setAttributes, 'showCart') }),
 						el(ToggleControl, { label: __('Show View cart button', 'shopapp-blocks'), checked: attrs.showViewCartButton !== false, onChange: setAttr(setAttributes, 'showViewCartButton') }),
+						el(ToggleControl, { label: __('Show coupon field', 'shopapp-blocks'), checked: attrs.showCouponField !== false, onChange: setAttr(setAttributes, 'showCouponField') }),
 						el(ToggleControl, { label: __('Use side cart drawer', 'shopapp-blocks'), checked: !!attrs.enableCartDrawer, onChange: setAttr(setAttributes, 'enableCartDrawer') }),
 						attrs.enableCartDrawer && el(SelectControl, {
 							label: __('Cart drawer position', 'shopapp-blocks'),

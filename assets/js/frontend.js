@@ -298,6 +298,7 @@
 	}
 
 	function createResultItem(product, savedContext) {
+		var normalized = normalizeStoreProduct(product);
 		var item = document.createElement('article');
 		var media = document.createElement('a');
 		var image = document.createElement('img');
@@ -306,18 +307,25 @@
 		var meta = document.createElement('p');
 		var actions = document.createElement('div');
 		var save = document.createElement('button');
-		var productId = Number(product.id || 0);
+		var productId = Number(normalized.id || 0);
 
 		item.className = 'shopapp-nav-product';
 		media.className = 'shopapp-nav-product__media';
-		media.href = product.permalink || '#';
-		image.src = product.image || (product.images && product.images[0] ? product.images[0].thumbnail || product.images[0].src : '');
-		image.alt = product.name || '';
+		media.href = normalized.permalink || '#';
+		image.src = normalized.image || setting('placeholderImage', '');
+		image.alt = normalized.name || '';
+		image.loading = 'lazy';
+		image.addEventListener('error', function () {
+			var placeholder = setting('placeholderImage', '');
+			if (placeholder && image.src !== placeholder) {
+				image.src = placeholder;
+			}
+		});
 		media.appendChild(image);
 		body.className = 'shopapp-nav-product__body';
-		name.textContent = product.name || '';
+		name.textContent = normalized.name || '';
 		meta.className = 'shopapp-nav-product__meta';
-		meta.textContent = product.price_text || formatStorePrice(product);
+		meta.textContent = normalized.price_text || '';
 		body.appendChild(name);
 		body.appendChild(meta);
 		actions.className = 'shopapp-nav-product__actions';
@@ -328,19 +336,29 @@
 		save.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"></path></svg>';
 		actions.appendChild(save);
 
-		if (product.type === 'simple' || !product.type) {
+		if (normalized.type === 'simple' || !normalized.type) {
 			var add = document.createElement('button');
 			add.type = 'button';
 			add.className = 'shopapp-nav-product__add';
 			add.textContent = translate('addToBag', 'Add to bag');
 			add.addEventListener('click', function () {
-				addLine(normalizeStoreProduct(product), 1);
+				add.disabled = true;
+				addLine(normalized, 1).then(function (added) {
+					if (added !== false) {
+						add.textContent = translate('addedToBag', 'Added');
+						window.setTimeout(function () {
+							add.textContent = translate('addToBag', 'Add to bag');
+						}, 1400);
+					}
+				}).finally(function () {
+					add.disabled = false;
+				});
 			});
 			actions.appendChild(add);
 		} else {
 			var view = document.createElement('a');
 			view.className = 'shopapp-nav-product__view';
-			view.href = product.permalink || '#';
+			view.href = normalized.permalink || '#';
 			view.textContent = translate('viewOptions', 'View options');
 			actions.appendChild(view);
 		}
@@ -349,6 +367,25 @@
 		item.appendChild(media);
 		item.appendChild(body);
 		return item;
+	}
+
+	function getProductImageUrl(product) {
+		var firstImage = product && Array.isArray(product.images) && product.images.length ? product.images[0] : null;
+
+		if (product && product.image) {
+			return product.image;
+		}
+		if (firstImage && firstImage.thumbnail) {
+			return firstImage.thumbnail;
+		}
+		if (firstImage && firstImage.src) {
+			return firstImage.src;
+		}
+		if (firstImage && firstImage.url) {
+			return firstImage.url;
+		}
+
+		return setting('placeholderImage', '');
 	}
 
 	function formatStorePrice(product) {
@@ -366,19 +403,28 @@
 	}
 
 	function normalizeStoreProduct(product) {
+		product = product || {};
 		var prices = product.prices || {};
 		var minorUnit = Number(prices.currency_minor_unit || 0);
+		var rawPrice = typeof product.price === 'undefined' ? Number(prices.price || 0) / Math.pow(10, minorUnit) : Number(product.price || 0);
+		var priceText = product.price_text || (product.price_html ? stripHtml(product.price_html) : formatStorePrice(product));
 		return {
 			id: product.id,
 			name: product.name,
-			image: product.images && product.images[0] ? product.images[0].src : '',
-			price: Number(prices.price || 0) / Math.pow(10, minorUnit),
-			price_text: formatStorePrice(product),
-			price_html: formatStorePrice(product),
+			image: getProductImageUrl(product),
+			price: rawPrice,
+			price_text: priceText,
+			price_html: product.price_html || priceText,
 			permalink: product.permalink,
 			type: product.type,
-			colors: []
+			colors: product.colors || []
 		};
+	}
+
+	function stripHtml(value) {
+		var node = document.createElement('div');
+		node.innerHTML = value || '';
+		return node.textContent || node.innerText || '';
 	}
 
 	function renderProductList(container, products, savedContext, append) {
