@@ -98,6 +98,98 @@ function shopapp_icon( $name ) {
 }
 
 /**
+ * Gets default product-popup benefits.
+ *
+ * @return array<int,array<string,string>>
+ */
+function shopapp_get_default_product_benefits() {
+	return array(
+		array(
+			'icon' => 'truck',
+			'text' => __( 'Free 2-day', 'shopapp-blocks' ),
+		),
+		array(
+			'icon' => 'rotate',
+			'text' => __( '60-day returns', 'shopapp-blocks' ),
+		),
+		array(
+			'icon' => 'shield',
+			'text' => __( '2-yr warranty', 'shopapp-blocks' ),
+		),
+	);
+}
+
+/**
+ * Sanitizes product-popup benefits.
+ *
+ * @param mixed               $benefits Product benefit rows.
+ * @param array<string,mixed> $fallback_attributes Legacy benefit attributes.
+ * @return array<int,array<string,string>>
+ */
+function shopapp_sanitize_product_benefits( $benefits, $fallback_attributes = array() ) {
+	$allowed_icons = array(
+		'bag',
+		'bell',
+		'card',
+		'check',
+		'facebook',
+		'heart',
+		'home',
+		'messenger',
+		'rotate',
+		'search',
+		'shield',
+		'star',
+		'tiktok',
+		'truck',
+		'user',
+		'wechat',
+		'whatsapp',
+		'youtube',
+		'zap',
+	);
+
+	if ( ! is_array( $benefits ) || empty( $benefits ) ) {
+		$benefits = array(
+			array(
+				'icon' => 'truck',
+				'text' => $fallback_attributes['benefitOne'] ?? __( 'Free 2-day', 'shopapp-blocks' ),
+			),
+			array(
+				'icon' => 'rotate',
+				'text' => $fallback_attributes['benefitTwo'] ?? __( '60-day returns', 'shopapp-blocks' ),
+			),
+			array(
+				'icon' => 'shield',
+				'text' => $fallback_attributes['benefitThree'] ?? __( '2-yr warranty', 'shopapp-blocks' ),
+			),
+		);
+	}
+
+	$clean = array();
+
+	foreach ( $benefits as $benefit ) {
+		if ( ! is_array( $benefit ) ) {
+			continue;
+		}
+
+		$text = isset( $benefit['text'] ) ? sanitize_text_field( $benefit['text'] ) : '';
+		$icon = isset( $benefit['icon'] ) ? sanitize_key( $benefit['icon'] ) : 'check';
+
+		if ( '' === $text ) {
+			continue;
+		}
+
+		$clean[] = array(
+			'icon' => in_array( $icon, $allowed_icons, true ) ? $icon : 'check',
+			'text' => $text,
+		);
+	}
+
+	return ! empty( $clean ) ? array_slice( $clean, 0, 8 ) : shopapp_get_default_product_benefits();
+}
+
+/**
  * Sanitizes product-grid block attributes.
  *
  * @param array<string,mixed> $attributes Block attributes.
@@ -118,6 +210,15 @@ function shopapp_sanitize_product_grid_attributes( $attributes ) {
 			'showRatings'                => true,
 			'showCategory'               => true,
 			'showOnSale'                 => true,
+			'benefitOne'                 => __( 'Free 2-day', 'shopapp-blocks' ),
+			'benefitTwo'                 => __( '60-day returns', 'shopapp-blocks' ),
+			'benefitThree'               => __( '2-yr warranty', 'shopapp-blocks' ),
+			'benefits'                   => array(),
+			'benefitAlignment'           => 'center',
+			'benefitBackground'          => '',
+			'benefitColor'               => '',
+			'benefitIconColor'           => '',
+			'benefitBorderRadius'        => 22,
 			'cardRadius'                 => 34,
 			'infoBackground'             => '',
 			'infoColor'                  => '',
@@ -162,6 +263,9 @@ function shopapp_sanitize_product_grid_attributes( $attributes ) {
 		'paginationColor',
 		'paginationActiveBackground',
 		'paginationActiveColor',
+		'benefitBackground',
+		'benefitColor',
+		'benefitIconColor',
 	);
 
 	$attributes['sectionTitle']  = sanitize_text_field( $attributes['sectionTitle'] );
@@ -175,6 +279,13 @@ function shopapp_sanitize_product_grid_attributes( $attributes ) {
 	$attributes['showRatings']   = (bool) $attributes['showRatings'];
 	$attributes['showCategory']  = (bool) $attributes['showCategory'];
 	$attributes['showOnSale']    = (bool) $attributes['showOnSale'];
+	$attributes['benefitOne']    = sanitize_text_field( $attributes['benefitOne'] );
+	$attributes['benefitTwo']    = sanitize_text_field( $attributes['benefitTwo'] );
+	$attributes['benefitThree']  = sanitize_text_field( $attributes['benefitThree'] );
+	$benefit_alignment              = sanitize_key( $attributes['benefitAlignment'] );
+	$attributes['benefits']         = shopapp_sanitize_product_benefits( $attributes['benefits'], $attributes );
+	$attributes['benefitAlignment'] = in_array( $benefit_alignment, array( 'left', 'center', 'right' ), true ) ? $benefit_alignment : 'center';
+	$attributes['benefitBorderRadius'] = max( 0, min( 60, absint( $attributes['benefitBorderRadius'] ) ) );
 	$attributes['cardRadius']    = max( 0, min( 80, absint( $attributes['cardRadius'] ) ) );
 	$attributes['page']          = max( 1, absint( $attributes['page'] ) );
 
@@ -324,6 +435,7 @@ function shopapp_get_product_grid_style( $attributes ) {
 	$style .= '--shopapp-tablet-columns:' . max( 1, min( 8, (int) $attributes['tabletColumns'] ) ) . ';';
 	$style .= '--shopapp-mobile-columns:' . max( 1, min( 4, (int) $attributes['mobileColumns'] ) ) . ';';
 	$style .= '--shopapp-card-radius:' . max( 0, min( 80, (int) $attributes['cardRadius'] ) ) . 'px;';
+	$style .= '--shopapp-benefit-radius:' . max( 0, min( 60, (int) $attributes['benefitBorderRadius'] ) ) . 'px;';
 
 	$style = shopapp_add_color_var( $style, '--shopapp-card-info-bg', $attributes['infoBackground'] );
 	$style = shopapp_add_color_var( $style, '--shopapp-card-info-color', $attributes['infoColor'] );
@@ -343,6 +455,9 @@ function shopapp_get_product_grid_style( $attributes ) {
 	$style = shopapp_add_color_var( $style, '--shopapp-pagination-color', $attributes['paginationColor'] );
 	$style = shopapp_add_color_var( $style, '--shopapp-pagination-active-bg', $attributes['paginationActiveBackground'] );
 	$style = shopapp_add_color_var( $style, '--shopapp-pagination-active-color', $attributes['paginationActiveColor'] );
+	$style = shopapp_add_color_var( $style, '--shopapp-benefit-bg', $attributes['benefitBackground'] );
+	$style = shopapp_add_color_var( $style, '--shopapp-benefit-color', $attributes['benefitColor'] );
+	$style = shopapp_add_color_var( $style, '--shopapp-benefit-icon-color', $attributes['benefitIconColor'] );
 
 	return $style;
 }
@@ -835,7 +950,7 @@ function shopapp_render_storefront( $attributes = array() ) {
 				</nav>
 			<?php endif; ?>
 		</div>
-		<?php shopapp_render_product_sheet(); ?>
+		<?php shopapp_render_product_sheet( $attributes ); ?>
 	</section>
 	<?php
 	return ob_get_clean();
@@ -1029,8 +1144,12 @@ function shopapp_render_checkout_menu_item( $item, $show_label ) {
 
 /**
  * Renders product detail sheet.
+ *
+ * @param array<string,mixed> $attributes Block attributes.
  */
-function shopapp_render_product_sheet() {
+function shopapp_render_product_sheet( $attributes = array() ) {
+	$attributes = shopapp_sanitize_product_grid_attributes( $attributes );
+	$benefit_class = 'shopapp-benefits shopapp-benefits--' . $attributes['benefitAlignment'];
 	?>
 	<div class="shopapp-sheet" data-shopapp-product-sheet hidden>
 		<div class="shopapp-sheet__overlay" data-shopapp-close-sheet></div>
@@ -1044,12 +1163,14 @@ function shopapp_render_product_sheet() {
 				</div>
 				<p class="shopapp-sheet__price"></p>
 			</div>
-			<p class="shopapp-sheet__rating shopapp-rating"></p>
+			<?php if ( $attributes['showRatings'] ) : ?>
+				<p class="shopapp-sheet__rating shopapp-rating"></p>
+			<?php endif; ?>
 			<div class="shopapp-sheet__colors"></div>
-			<ul class="shopapp-benefits">
-				<li><?php echo shopapp_icon( 'truck' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span><?php esc_html_e( 'Free 2-day', 'shopapp-blocks' ); ?></span></li>
-				<li><?php echo shopapp_icon( 'rotate' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span><?php esc_html_e( '60-day returns', 'shopapp-blocks' ); ?></span></li>
-				<li><?php echo shopapp_icon( 'shield' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span><?php esc_html_e( '2-yr warranty', 'shopapp-blocks' ); ?></span></li>
+			<ul class="<?php echo esc_attr( $benefit_class ); ?>">
+				<?php foreach ( $attributes['benefits'] as $benefit ) : ?>
+					<li><?php echo shopapp_icon( $benefit['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span><?php echo esc_html( $benefit['text'] ); ?></span></li>
+				<?php endforeach; ?>
 			</ul>
 			<div class="shopapp-sheet__actions">
 				<button class="shopapp-button shopapp-button--soft" type="button" data-shopapp-sheet-add><?php esc_html_e( 'Add to bag', 'shopapp-blocks' ); ?></button>

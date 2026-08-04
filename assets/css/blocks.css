@@ -36,6 +36,13 @@
   margin: 0;
 }
 
+html.shopapp-sheet-open,
+body.shopapp-sheet-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
 .shopapp-app-shell {
   position: relative;
   min-height: 100vh;
@@ -211,6 +218,30 @@
 .shopapp-button--soft {
   background: var(--shopapp-surface-2);
   backdrop-filter: blur(16px) saturate(150%);
+}
+
+.shopapp-button:disabled,
+.shopapp-button[aria-busy="true"] {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.shopapp-button.is-added {
+  color: #ffffff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #059669, #22c55e);
+}
+
+.shopapp-button__check {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: #059669;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
 }
 
 .shopapp-filter-list {
@@ -464,6 +495,14 @@
   color: var(--shopapp-add-color, #ffffff);
   background: var(--shopapp-add-bg, linear-gradient(135deg, var(--shopapp-ember), var(--shopapp-ember-soft)));
   cursor: pointer;
+  z-index: 2;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.shopapp-card-add svg,
+.shopapp-card-add svg * {
+  pointer-events: none;
 }
 
 .shopapp-card-save {
@@ -636,6 +675,9 @@
   width: min(100%, 640px);
   max-height: 92vh;
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding: 24px 24px max(26px, env(safe-area-inset-bottom));
   border: 1px solid var(--shopapp-border);
   border-radius: 34px 34px 0 0;
@@ -703,6 +745,20 @@
   margin: 0 auto 18px;
   border-radius: 999px;
   background: rgba(16, 185, 129, 0.22);
+  cursor: grab;
+  touch-action: none;
+}
+
+.shopapp-sheet__handle:active {
+  cursor: grabbing;
+}
+
+.shopapp-sheet__panel {
+  transition: max-height 0.24s ease, transform 0.24s ease;
+}
+
+.shopapp-sheet.is-minimized .shopapp-sheet__panel {
+  max-height: 34vh;
 }
 
 .shopapp-sheet__image {
@@ -779,14 +835,29 @@
   gap: 8px;
   min-height: 88px;
   padding: 12px;
-  border-radius: 22px;
-  color: var(--shopapp-muted);
-  background: var(--shopapp-surface-2);
+  border-radius: var(--shopapp-benefit-radius, 22px);
+  color: var(--shopapp-benefit-color, var(--shopapp-muted));
+  background: var(--shopapp-benefit-bg, var(--shopapp-surface-2));
   text-align: center;
 }
 
+.shopapp-benefits--left li {
+  justify-items: start;
+  text-align: left;
+}
+
+.shopapp-benefits--center li {
+  justify-items: center;
+  text-align: center;
+}
+
+.shopapp-benefits--right li {
+  justify-items: end;
+  text-align: right;
+}
+
 .shopapp-benefits svg {
-  color: var(--shopapp-ember);
+  color: var(--shopapp-benefit-icon-color, var(--shopapp-ember));
 }
 
 .shopapp-sheet__actions {
@@ -1362,11 +1433,13 @@
 
   .shopapp-checkout-line {
     grid-template-columns: 58px minmax(0, 1fr);
+    align-items: start;
   }
 
   .shopapp-qty {
-    grid-column: 1 / -1;
-    justify-content: flex-end;
+    grid-column: 2;
+    justify-content: flex-start;
+    margin-top: 2px;
   }
 
   .shopapp-nav-search {

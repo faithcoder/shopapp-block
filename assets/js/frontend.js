@@ -68,11 +68,39 @@
 		}
 		if (hidden) {
 			el.setAttribute('hidden', '');
-			document.body.classList.remove('shopapp-sheet-open');
+			el.classList.remove('is-minimized');
 		} else {
 			el.removeAttribute('hidden');
-			document.body.classList.add('shopapp-sheet-open');
 		}
+		updatePopupScrollLock();
+	}
+
+	function updatePopupScrollLock() {
+		var hasOpenPopup = Array.prototype.some.call(
+			document.querySelectorAll('[data-shopapp-product-sheet], [data-shopapp-checkout], [data-shopapp-nav-sheet]'),
+			function (popup) {
+				return !popup.hidden;
+			}
+		);
+
+		document.documentElement.classList.toggle('shopapp-sheet-open', hasOpenPopup);
+		document.body.classList.toggle('shopapp-sheet-open', hasOpenPopup);
+	}
+
+	function setProductSheetMinimized(minimized) {
+		var productSheet = document.querySelector('[data-shopapp-product-sheet]');
+		if (!productSheet) {
+			return;
+		}
+		productSheet.classList.toggle('is-minimized', !!minimized);
+	}
+
+	function toggleProductSheetSize() {
+		var productSheet = document.querySelector('[data-shopapp-product-sheet]');
+		if (!productSheet) {
+			return;
+		}
+		setProductSheetMinimized(!productSheet.classList.contains('is-minimized'));
 	}
 
 	function cartRequest(action, data, nonce) {
@@ -173,6 +201,32 @@
 			showCartError(error);
 			return false;
 		});
+	}
+
+	function getCheckoutUrl() {
+		return cart.checkout_url || setting('checkoutUrl', '#');
+	}
+
+	function setButtonBusy(button, busy) {
+		if (!button) {
+			return;
+		}
+		button.disabled = !!busy;
+		button.setAttribute('aria-busy', busy ? 'true' : 'false');
+	}
+
+	function showAddedState(button) {
+		if (!button) {
+			return;
+		}
+		var original = button.getAttribute('data-shopapp-original-text') || button.textContent;
+		button.setAttribute('data-shopapp-original-text', original);
+		button.classList.add('is-added');
+		button.innerHTML = '<span class="shopapp-button__check" aria-hidden="true">✓</span><span>' + translate('addedToBag', 'Added') + '</span>';
+		window.setTimeout(function () {
+			button.classList.remove('is-added');
+			button.textContent = original;
+		}, 1400);
 	}
 
 	function changeQty(key, quantity) {
@@ -280,7 +334,9 @@
 		productSheet.querySelector('.shopapp-sheet__image').alt = product.name || '';
 		productSheet.querySelector('.shopapp-sheet__tagline').textContent = product.tagline || '';
 		productSheet.querySelector('.shopapp-sheet__price').innerHTML = product.price_html || money(product.price);
-		productSheet.querySelector('.shopapp-sheet__rating').innerHTML = '<span class="shopapp-star-text">*</span> ' + (product.rating || '4.8') + ' - 214 reviews';
+		if (productSheet.querySelector('.shopapp-sheet__rating')) {
+			productSheet.querySelector('.shopapp-sheet__rating').innerHTML = '<span class="shopapp-star-text">*</span> ' + (product.rating || '4.8') + ' - 214 reviews';
+		}
 		var colorWrap = productSheet.querySelector('.shopapp-sheet__colors');
 		colorWrap.innerHTML = '';
 		(product.colors || ['Standard']).forEach(function (color, index) {
@@ -294,7 +350,64 @@
 			});
 			colorWrap.appendChild(button);
 		});
+		setProductSheetMinimized(false);
 		setHidden(productSheet, false);
+	}
+
+	function initProductSheetHandle() {
+		var productSheet = document.querySelector('[data-shopapp-product-sheet]');
+		var handle = productSheet ? productSheet.querySelector('.shopapp-sheet__handle') : null;
+		var startY = 0;
+		var moved = false;
+
+		if (!productSheet || !handle || handle.getAttribute('data-shopapp-handle-ready')) {
+			return;
+		}
+
+		handle.setAttribute('data-shopapp-handle-ready', 'true');
+		handle.setAttribute('role', 'button');
+		handle.setAttribute('tabindex', '0');
+		handle.setAttribute('aria-label', translate('toggleProductPopup', 'Minimize or maximize product popup'));
+
+		handle.addEventListener('pointerdown', function (event) {
+			startY = event.clientY;
+			moved = false;
+			handle.setPointerCapture(event.pointerId);
+		});
+
+		handle.addEventListener('pointermove', function (event) {
+			if (!startY) {
+				return;
+			}
+			if (Math.abs(event.clientY - startY) > 12) {
+				moved = true;
+			}
+		});
+
+		handle.addEventListener('pointerup', function (event) {
+			var delta = event.clientY - startY;
+			startY = 0;
+			if (moved && Math.abs(delta) > 28) {
+				setProductSheetMinimized(delta > 0);
+				return;
+			}
+			toggleProductSheetSize();
+		});
+
+		handle.addEventListener('keydown', function (event) {
+			if (event.key === 'Enter' || event.key === ' ') {
+				event.preventDefault();
+				toggleProductSheetSize();
+			}
+			if (event.key === 'ArrowDown') {
+				event.preventDefault();
+				setProductSheetMinimized(true);
+			}
+			if (event.key === 'ArrowUp') {
+				event.preventDefault();
+				setProductSheetMinimized(false);
+			}
+		});
 	}
 
 	function createResultItem(product, savedContext) {
@@ -769,6 +882,7 @@
 			openProduct(parseProduct(card));
 		}
 		if (target.closest('[data-shopapp-add]') && card) {
+			event.preventDefault();
 			addLine(parseProduct(card), 1);
 		}
 		var saveButton = target.closest('[data-shopapp-save]');
@@ -790,15 +904,26 @@
 			setHidden(document.querySelector('[data-shopapp-nav-sheet]'), true);
 		}
 		if (target.closest('[data-shopapp-sheet-add]')) {
-			addLine(activeProduct, 1);
+			var sheetAdd = target.closest('[data-shopapp-sheet-add]');
+			setButtonBusy(sheetAdd, true);
+			addLine(activeProduct, 1).then(function (added) {
+				if (added !== false) {
+					showAddedState(sheetAdd);
+				}
+			}).finally(function () {
+				setButtonBusy(sheetAdd, false);
+			});
 		}
 		if (target.closest('[data-shopapp-sheet-buy]')) {
+			var buyButton = target.closest('[data-shopapp-sheet-buy]');
+			setButtonBusy(buyButton, true);
 			addLine(activeProduct, 1).then(function (added) {
 				if (added === false) {
 					return;
 				}
-				setHidden(document.querySelector('[data-shopapp-product-sheet]'), true);
-				setHidden(document.querySelector('[data-shopapp-checkout]'), false);
+				window.location.href = getCheckoutUrl();
+			}).finally(function () {
+				setButtonBusy(buyButton, false);
 			});
 		}
 		if (target.closest('[data-shopapp-continue]')) {
@@ -863,6 +988,7 @@
 	});
 
 	renderCheckout();
+	initProductSheetHandle();
 	loadCart();
 	setSavedIds(getLocalSavedIds());
 	syncSavedProducts('merge').catch(function () {});

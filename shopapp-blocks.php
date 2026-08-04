@@ -111,6 +111,7 @@ function shopapp_blocks_register_assets() {
 				'signIn'          => __( 'Sign in or create account', 'shopapp-blocks' ),
 				'signInPrompt'    => __( 'Sign in to view orders, addresses, downloads, and saved products.', 'shopapp-blocks' ),
 				'signOut'         => __( 'Sign out', 'shopapp-blocks' ),
+				'toggleProductPopup' => __( 'Minimize or maximize product popup', 'shopapp-blocks' ),
 				'viewOptions'     => __( 'View options', 'shopapp-blocks' ),
 			),
 		)

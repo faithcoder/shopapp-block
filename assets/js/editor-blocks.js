@@ -28,6 +28,7 @@
 		{ label: __('Check', 'shopapp-blocks'), value: 'check' },
 		{ label: __('Facebook', 'shopapp-blocks'), value: 'facebook' },
 		{ label: __('Messenger', 'shopapp-blocks'), value: 'messenger' },
+		{ label: __('Rotate', 'shopapp-blocks'), value: 'rotate' },
 		{ label: __('Shield', 'shopapp-blocks'), value: 'shield' },
 		{ label: __('Star', 'shopapp-blocks'), value: 'star' },
 		{ label: __('TikTok', 'shopapp-blocks'), value: 'tiktok' },
@@ -48,6 +49,11 @@
 		{ label: 'Search', icon: 'search', link: '', popup: 'search', visible: true, active: false },
 		{ label: 'Saved', icon: 'heart', link: '', popup: 'saved', visible: true, active: false },
 		{ label: 'You', icon: 'user', link: '', popup: 'you', visible: true, active: false }
+	];
+	var defaultBenefits = [
+		{ icon: 'truck', text: __('Free 2-day', 'shopapp-blocks') },
+		{ icon: 'rotate', text: __('60-day returns', 'shopapp-blocks') },
+		{ icon: 'shield', text: __('2-yr warranty', 'shopapp-blocks') }
 	];
 
 	var supports = {
@@ -114,6 +120,43 @@
 		setAttributes({ menuItems: items });
 	}
 
+	function benefitItems(attrs) {
+		if (Array.isArray(attrs.benefits) && attrs.benefits.length) {
+			return attrs.benefits;
+		}
+		if (attrs.benefitOne || attrs.benefitTwo || attrs.benefitThree) {
+			return [
+				{ icon: 'truck', text: attrs.benefitOne || __('Free 2-day', 'shopapp-blocks') },
+				{ icon: 'rotate', text: attrs.benefitTwo || __('60-day returns', 'shopapp-blocks') },
+				{ icon: 'shield', text: attrs.benefitThree || __('2-yr warranty', 'shopapp-blocks') }
+			];
+		}
+		return defaultBenefits;
+	}
+
+	function updateBenefit(setAttributes, attrs, index, key, value) {
+		var benefits = benefitItems(attrs).map(function (benefit) {
+			return Object.assign({}, benefit);
+		});
+		benefits[index][key] = value;
+		setAttributes({ benefits: benefits });
+	}
+
+	function addBenefit(setAttributes, attrs) {
+		var benefits = benefitItems(attrs).map(function (benefit) {
+			return Object.assign({}, benefit);
+		});
+		benefits.push({ icon: 'check', text: __('New benefit', 'shopapp-blocks') });
+		setAttributes({ benefits: benefits });
+	}
+
+	function removeBenefit(setAttributes, attrs, index) {
+		var benefits = benefitItems(attrs).filter(function (benefit, benefitIndex) {
+			return benefitIndex !== index;
+		});
+		setAttributes({ benefits: benefits });
+	}
+
 	wp.blocks.registerBlockType('shopapp/search-filters', {
 		apiVersion: 2,
 		title: __('ShopApp Search & Filters', 'shopapp-blocks'),
@@ -170,6 +213,15 @@
 			showRatings: { type: 'boolean', default: true },
 			showCategory: { type: 'boolean', default: true },
 			showOnSale: { type: 'boolean', default: true },
+			benefitOne: { type: 'string', default: 'Free 2-day' },
+			benefitTwo: { type: 'string', default: '60-day returns' },
+			benefitThree: { type: 'string', default: '2-yr warranty' },
+			benefits: { type: 'array', default: [] },
+			benefitAlignment: { type: 'string', default: 'center' },
+			benefitBackground: { type: 'string', default: '' },
+			benefitColor: { type: 'string', default: '' },
+			benefitIconColor: { type: 'string', default: '' },
+			benefitBorderRadius: { type: 'number', default: 22 },
 			cardRadius: { type: 'number', default: 34 },
 			infoBackground: { type: 'string', default: '' },
 			infoColor: { type: 'string', default: '' },
@@ -193,6 +245,7 @@
 		edit: function (props) {
 			var attrs = props.attributes;
 			var setAttributes = props.setAttributes;
+			var benefits = benefitItems(attrs);
 			return el(
 				Fragment,
 				null,
@@ -227,6 +280,16 @@
 						el(ToggleControl, { label: __('Show category', 'shopapp-blocks'), checked: attrs.showCategory !== false, onChange: setAttr(setAttributes, 'showCategory') }),
 						el(ToggleControl, { label: __('Show On Sale badge', 'shopapp-blocks'), checked: attrs.showOnSale !== false, onChange: setAttr(setAttributes, 'showOnSale') })
 					),
+					el(PanelBody, { title: __('Product popup benefits', 'shopapp-blocks'), initialOpen: false },
+						benefits.map(function (benefit, index) {
+							return el('div', { key: index, className: 'shopapp-editor-menu-item' },
+								el(SelectControl, { label: __('Icon', 'shopapp-blocks'), value: benefit.icon || 'check', options: checkoutIconOptions, onChange: function (value) { updateBenefit(setAttributes, attrs, index, 'icon', value); } }),
+								el(TextControl, { label: __('Text', 'shopapp-blocks'), value: benefit.text || '', onChange: function (value) { updateBenefit(setAttributes, attrs, index, 'text', value); } }),
+								el(Button, { isDestructive: true, variant: 'secondary', onClick: function () { removeBenefit(setAttributes, attrs, index); } }, __('Remove benefit', 'shopapp-blocks'))
+							);
+						}),
+						el(Button, { variant: 'primary', onClick: function () { addBenefit(setAttributes, attrs); } }, __('Add benefit', 'shopapp-blocks'))
+					),
 					el(PanelBody, { title: __('Responsive columns', 'shopapp-blocks'), initialOpen: false },
 						el(RangeControl, { label: __('Desktop columns', 'shopapp-blocks'), value: attrs.columns || 4, min: 1, max: 12, onChange: setAttr(setAttributes, 'columns') }),
 						el(RangeControl, { label: __('Tablet columns', 'shopapp-blocks'), value: attrs.tabletColumns || 2, min: 1, max: 8, onChange: setAttr(setAttributes, 'tabletColumns') }),
@@ -236,6 +299,19 @@
 				el(InspectorControls, { group: 'styles' },
 					el(PanelBody, { title: __('Card style', 'shopapp-blocks'), initialOpen: false },
 						el(RangeControl, { label: __('Product card border radius', 'shopapp-blocks'), value: attrs.cardRadius || 34, min: 0, max: 80, onChange: setAttr(setAttributes, 'cardRadius') })
+					),
+					el(PanelBody, { title: __('Product popup benefits', 'shopapp-blocks'), initialOpen: false },
+						el(SelectControl, {
+							label: __('Alignment', 'shopapp-blocks'),
+							value: attrs.benefitAlignment || 'center',
+							options: [
+								{ label: __('Left', 'shopapp-blocks'), value: 'left' },
+								{ label: __('Center', 'shopapp-blocks'), value: 'center' },
+								{ label: __('Right', 'shopapp-blocks'), value: 'right' }
+							],
+							onChange: setAttr(setAttributes, 'benefitAlignment')
+						}),
+						el(RangeControl, { label: __('Border radius', 'shopapp-blocks'), value: attrs.benefitBorderRadius || 22, min: 0, max: 60, onChange: setAttr(setAttributes, 'benefitBorderRadius') })
 					),
 					PanelColorSettings && el(PanelColorSettings, {
 						title: __('Product info colors', 'shopapp-blocks'),
@@ -253,6 +329,15 @@
 							{ label: __('Currency', 'shopapp-blocks'), value: attrs.currencyColor, onChange: setAttr(setAttributes, 'currencyColor') },
 							{ label: __('Plus button background', 'shopapp-blocks'), value: attrs.addButtonBackground, onChange: setAttr(setAttributes, 'addButtonBackground') },
 							{ label: __('Plus button icon', 'shopapp-blocks'), value: attrs.addButtonColor, onChange: setAttr(setAttributes, 'addButtonColor') }
+						]
+					}),
+					PanelColorSettings && el(PanelColorSettings, {
+						title: __('Product popup benefit colors', 'shopapp-blocks'),
+						initialOpen: false,
+						colorSettings: [
+							{ label: __('Background', 'shopapp-blocks'), value: attrs.benefitBackground, onChange: setAttr(setAttributes, 'benefitBackground') },
+							{ label: __('Text', 'shopapp-blocks'), value: attrs.benefitColor, onChange: setAttr(setAttributes, 'benefitColor') },
+							{ label: __('Icon', 'shopapp-blocks'), value: attrs.benefitIconColor, onChange: setAttr(setAttributes, 'benefitIconColor') }
 						]
 					}),
 					PanelColorSettings && el(PanelColorSettings, {
