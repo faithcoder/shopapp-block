@@ -220,6 +220,10 @@ function shopapp_sanitize_product_grid_attributes( $attributes ) {
 			'benefitIconColor'           => '',
 			'benefitBorderRadius'        => 22,
 			'cardRadius'                 => 34,
+			'sheetWidth'                 => 640,
+			'sheetHeight'                => 900,
+			'sheetOffsetX'               => 0,
+			'sheetOffsetY'               => 0,
 			'infoBackground'             => '',
 			'infoColor'                  => '',
 			'ratingStarColor'            => '',
@@ -287,6 +291,10 @@ function shopapp_sanitize_product_grid_attributes( $attributes ) {
 	$attributes['benefitAlignment'] = in_array( $benefit_alignment, array( 'left', 'center', 'right' ), true ) ? $benefit_alignment : 'center';
 	$attributes['benefitBorderRadius'] = max( 0, min( 60, absint( $attributes['benefitBorderRadius'] ) ) );
 	$attributes['cardRadius']    = max( 0, min( 80, absint( $attributes['cardRadius'] ) ) );
+	$attributes['sheetWidth']    = max( 280, min( 1400, absint( $attributes['sheetWidth'] ) ) );
+	$attributes['sheetHeight']   = max( 320, min( 1400, absint( $attributes['sheetHeight'] ) ) );
+	$attributes['sheetOffsetX']  = max( -600, min( 600, (int) $attributes['sheetOffsetX'] ) );
+	$attributes['sheetOffsetY']  = max( -320, min( 520, (int) $attributes['sheetOffsetY'] ) );
 	$attributes['page']          = max( 1, absint( $attributes['page'] ) );
 
 	foreach ( $color_keys as $color_key ) {
@@ -436,6 +444,10 @@ function shopapp_get_product_grid_style( $attributes ) {
 	$style .= '--shopapp-mobile-columns:' . max( 1, min( 4, (int) $attributes['mobileColumns'] ) ) . ';';
 	$style .= '--shopapp-card-radius:' . max( 0, min( 80, (int) $attributes['cardRadius'] ) ) . 'px;';
 	$style .= '--shopapp-benefit-radius:' . max( 0, min( 60, (int) $attributes['benefitBorderRadius'] ) ) . 'px;';
+	$style .= '--shopapp-sheet-width:' . max( 280, min( 1400, (int) $attributes['sheetWidth'] ) ) . 'px;';
+	$style .= '--shopapp-sheet-height:' . max( 320, min( 1400, (int) $attributes['sheetHeight'] ) ) . 'px;';
+	$style .= '--shopapp-sheet-offset-x:' . max( -600, min( 600, (int) $attributes['sheetOffsetX'] ) ) . 'px;';
+	$style .= '--shopapp-sheet-offset-y:' . max( -320, min( 520, (int) $attributes['sheetOffsetY'] ) ) . 'px;';
 
 	$style = shopapp_add_color_var( $style, '--shopapp-card-info-bg', $attributes['infoBackground'] );
 	$style = shopapp_add_color_var( $style, '--shopapp-card-info-color', $attributes['infoColor'] );
@@ -1152,9 +1164,12 @@ function shopapp_render_product_sheet( $attributes = array() ) {
 	$benefit_class = 'shopapp-benefits shopapp-benefits--' . $attributes['benefitAlignment'];
 	?>
 	<div class="shopapp-sheet" data-shopapp-product-sheet hidden>
-		<div class="shopapp-sheet__overlay" data-shopapp-close-sheet></div>
+		<div class="shopapp-sheet__overlay" data-shopapp-close-sheet data-shopapp-close-nav></div>
 		<div class="shopapp-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-product-title">
 			<div class="shopapp-sheet__handle"></div>
+			<div class="shopapp-popup-close-row">
+				<button type="button" data-shopapp-close-nav aria-label="<?php esc_attr_e( 'Close', 'shopapp-blocks' ); ?>">&times;</button>
+			</div>
 			<img class="shopapp-sheet__image" src="" alt="">
 			<div class="shopapp-sheet__title-row">
 				<div>
@@ -1206,11 +1221,14 @@ function shopapp_render_quick_checkout(
 	}
 	?>
 	<div class="<?php echo esc_attr( $classes ); ?>" data-shopapp-checkout hidden>
-		<div class="shopapp-checkout__overlay" data-shopapp-close-checkout></div>
+		<div class="shopapp-checkout__overlay" data-shopapp-close-checkout data-shopapp-close-nav></div>
 		<div class="shopapp-checkout__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-checkout-title">
 			<div class="shopapp-sheet__handle"></div>
 			<div data-shopapp-checkout-review>
-				<h2 id="shopapp-checkout-title"><?php esc_html_e( 'Quick checkout', 'shopapp-blocks' ); ?></h2>
+				<div class="shopapp-popup-heading">
+					<h2 id="shopapp-checkout-title"><?php esc_html_e( 'Quick checkout', 'shopapp-blocks' ); ?></h2>
+					<button type="button" data-shopapp-close-nav aria-label="<?php esc_attr_e( 'Close', 'shopapp-blocks' ); ?>">&times;</button>
+				</div>
 				<p class="shopapp-checkout__intro"><?php esc_html_e( 'Review your bag before secure checkout.', 'shopapp-blocks' ); ?></p>
 				<ul class="shopapp-checkout__lines" data-shopapp-lines></ul>
 				<?php if ( $show_coupon_field ) : ?>

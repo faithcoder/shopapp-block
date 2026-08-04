@@ -223,6 +223,10 @@
 			benefitIconColor: { type: 'string', default: '' },
 			benefitBorderRadius: { type: 'number', default: 22 },
 			cardRadius: { type: 'number', default: 34 },
+			sheetWidth: { type: 'number', default: 640 },
+			sheetHeight: { type: 'number', default: 900 },
+			sheetOffsetX: { type: 'number', default: 0 },
+			sheetOffsetY: { type: 'number', default: 0 },
 			infoBackground: { type: 'string', default: '' },
 			infoColor: { type: 'string', default: '' },
 			ratingStarColor: { type: 'string', default: '' },
@@ -299,6 +303,12 @@
 				el(InspectorControls, { group: 'styles' },
 					el(PanelBody, { title: __('Card style', 'shopapp-blocks'), initialOpen: false },
 						el(RangeControl, { label: __('Product card border radius', 'shopapp-blocks'), value: attrs.cardRadius || 34, min: 0, max: 80, onChange: setAttr(setAttributes, 'cardRadius') })
+					),
+					el(PanelBody, { title: __('Product popup layout', 'shopapp-blocks'), initialOpen: false },
+						el(RangeControl, { label: __('Popup width', 'shopapp-blocks'), value: attrs.sheetWidth || 640, min: 280, max: 1400, onChange: setAttr(setAttributes, 'sheetWidth') }),
+						el(RangeControl, { label: __('Popup max height', 'shopapp-blocks'), value: attrs.sheetHeight || 900, min: 320, max: 1400, onChange: setAttr(setAttributes, 'sheetHeight') }),
+						el(RangeControl, { label: __('Horizontal offset', 'shopapp-blocks'), value: attrs.sheetOffsetX || 0, min: -600, max: 600, onChange: setAttr(setAttributes, 'sheetOffsetX') }),
+						el(RangeControl, { label: __('Vertical offset', 'shopapp-blocks'), value: attrs.sheetOffsetY || 0, min: -320, max: 520, onChange: setAttr(setAttributes, 'sheetOffsetY') })
 					),
 					el(PanelBody, { title: __('Product popup benefits', 'shopapp-blocks'), initialOpen: false },
 						el(SelectControl, {
