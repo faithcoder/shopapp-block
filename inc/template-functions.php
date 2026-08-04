@@ -393,13 +393,16 @@ function shopapp_get_product_data( $product ) {
 	$price         = $product->get_price();
 	$regular_price = $product->get_regular_price();
 	$on_sale       = $product->is_on_sale();
+	$price_html    = $product->is_type( 'variable' )
+		? wp_kses_post( $product->get_price_html() )
+		: shopapp_format_product_price_html( $price, $regular_price, $on_sale );
 
 	return array(
 		'id'          => $product_id,
 		'name'        => $product->get_name(),
 		'tagline'     => wp_strip_all_tags( $product->get_short_description() ? $product->get_short_description() : $product->get_description() ),
 		'price'       => (float) $price,
-		'price_html'  => shopapp_format_product_price_html( $price, $regular_price, $on_sale ),
+		'price_html'  => $price_html,
 		'price_text'  => wp_strip_all_tags( shopapp_format_price( $price ) ),
 		'image'       => $image ? $image : SHOPAPP_BLOCKS_URL . 'assets/images/demo-pour.svg',
 		'category'    => $category,
@@ -410,6 +413,7 @@ function shopapp_get_product_data( $product ) {
 		'permalink'   => esc_url_raw( $product->get_permalink() ),
 		'type'        => $product->get_type(),
 		'options'     => shopapp_get_product_option_groups( $product ),
+		'variations'  => shopapp_get_product_variation_data( $product ),
 		'on_sale'     => $on_sale,
 	);
 }
@@ -534,18 +538,63 @@ function shopapp_get_product_option_groups( $product ) {
 				}
 			}
 
-			$labels[] = sanitize_text_field( $label );
+			$labels[] = array(
+				'label' => sanitize_text_field( $label ),
+				'value' => (string) $value,
+			);
 		}
 
 		if ( ! empty( $labels ) ) {
 			$options[] = array(
-				'name'   => wc_attribute_label( $attribute_name, $product ),
-				'values' => array_values( array_unique( $labels ) ),
+				'attribute' => function_exists( 'wc_variation_attribute_name' ) ? wc_variation_attribute_name( $attribute_name ) : 'attribute_' . sanitize_title( $attribute_name ),
+				'name'      => wc_attribute_label( $attribute_name, $product ),
+				'values'    => array_values( $labels ),
 			);
 		}
 	}
 
 	return $options;
+}
+
+/**
+ * Gets available variation data for the product popup.
+ *
+ * @param WC_Product $product Product object.
+ * @return array<int,array<string,mixed>>
+ */
+function shopapp_get_product_variation_data( $product ) {
+	if ( ! $product || ! $product->is_type( 'variable' ) || ! is_callable( array( $product, 'get_available_variations' ) ) ) {
+		return array();
+	}
+
+	$variations = array();
+
+	foreach ( $product->get_available_variations() as $variation ) {
+		if ( empty( $variation['variation_id'] ) || empty( $variation['attributes'] ) ) {
+			continue;
+		}
+
+		$attributes = array();
+
+		foreach ( $variation['attributes'] as $key => $value ) {
+			$attributes[ sanitize_key( $key ) ] = is_scalar( $value ) ? wc_clean( wp_unslash( (string) $value ) ) : '';
+		}
+
+		$price         = isset( $variation['display_price'] ) ? (float) $variation['display_price'] : 0;
+		$regular_price = isset( $variation['display_regular_price'] ) ? (float) $variation['display_regular_price'] : 0;
+		$on_sale       = $regular_price > 0 && $price < $regular_price;
+
+		$variations[] = array(
+			'id'             => absint( $variation['variation_id'] ),
+			'attributes'     => $attributes,
+			'price'          => $price,
+			'price_html'     => shopapp_format_product_price_html( $price, $on_sale ? $regular_price : null, $on_sale ),
+			'is_in_stock'    => ! empty( $variation['is_in_stock'] ),
+			'is_purchasable' => ! empty( $variation['is_purchasable'] ),
+		);
+	}
+
+	return $variations;
 }
 
 /**

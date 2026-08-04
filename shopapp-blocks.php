@@ -86,6 +86,11 @@ function shopapp_blocks_register_assets() {
 				'addToBag'        => __( 'Add to bag', 'shopapp-blocks' ),
 				'addedToBag'      => __( 'Added', 'shopapp-blocks' ),
 				'addedToSaved'    => __( 'Product saved.', 'shopapp-blocks' ),
+				'buyNow'          => __( 'Buy now', 'shopapp-blocks' ),
+				'chooseOptions'   => __( 'Select your options above, then add to bag.', 'shopapp-blocks' ),
+				'chooseVariation' => __( 'Please select a valid combination.', 'shopapp-blocks' ),
+				'outOfStock'      => __( 'Out of stock', 'shopapp-blocks' ),
+				'viewProduct'     => __( 'View product', 'shopapp-blocks' ),
 				'accountDetails'  => __( 'Account details', 'shopapp-blocks' ),
 				'addresses'       => __( 'Addresses', 'shopapp-blocks' ),
 				'browseProducts'  => __( 'Browse products', 'shopapp-blocks' ),
@@ -258,6 +263,8 @@ function shopapp_blocks_ajax_add_to_cart() {
 
 	$product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
 	$quantity   = isset( $_POST['quantity'] ) ? max( 1, absint( wp_unslash( $_POST['quantity'] ) ) ) : 1;
+	$variation_id = isset( $_POST['variation_id'] ) ? absint( wp_unslash( $_POST['variation_id'] ) ) : 0;
+	$variation    = array();
 
 	if ( ! $product_id ) {
 		wp_send_json_error(
@@ -266,7 +273,17 @@ function shopapp_blocks_ajax_add_to_cart() {
 		);
 	}
 
-	$added = WC()->cart->add_to_cart( $product_id, $quantity );
+	if ( isset( $_POST['variation'] ) ) {
+		$raw_variation = json_decode( (string) sanitize_text_field( wp_unslash( $_POST['variation'] ) ), true );
+
+		if ( is_array( $raw_variation ) ) {
+			foreach ( $raw_variation as $key => $value ) {
+				$variation[ sanitize_key( $key ) ] = wc_clean( $value );
+			}
+		}
+	}
+
+	$added = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation );
 
 	if ( ! $added ) {
 		wp_send_json_error(

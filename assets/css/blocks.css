@@ -867,6 +867,10 @@ body.shopapp-sheet-open {
   margin: 18px 0;
 }
 
+.shopapp-sheet__colors:empty {
+  display: none;
+}
+
 .shopapp-sheet__options {
   display: grid;
   gap: 14px;
@@ -1586,6 +1590,7 @@ body.shopapp-sheet-open {
     grid-column: 2;
     justify-content: flex-start;
     margin-top: 2px;
+    width: fit-content;
   }
 
   .shopapp-nav-search {
