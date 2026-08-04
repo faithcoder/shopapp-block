@@ -278,6 +278,9 @@
 		attributes: {
 			showLabels: { type: 'boolean', default: true },
 			showCart: { type: 'boolean', default: true },
+			showViewCartButton: { type: 'boolean', default: true },
+			enableCartDrawer: { type: 'boolean', default: false },
+			cartDrawerPosition: { type: 'string', default: 'right' },
 			menuItems: { type: 'array', default: [] },
 			width: { type: 'number', default: 660 },
 			height: { type: 'number', default: 88 },
@@ -317,7 +320,18 @@
 				el(InspectorControls, null,
 					el(PanelBody, { title: __('Checkout bar', 'shopapp-blocks'), initialOpen: true },
 						el(ToggleControl, { label: __('Show labels', 'shopapp-blocks'), checked: attrs.showLabels !== false, onChange: setAttr(setAttributes, 'showLabels') }),
-						el(ToggleControl, { label: __('Show cart button', 'shopapp-blocks'), checked: attrs.showCart !== false, onChange: setAttr(setAttributes, 'showCart') })
+						el(ToggleControl, { label: __('Show cart button', 'shopapp-blocks'), checked: attrs.showCart !== false, onChange: setAttr(setAttributes, 'showCart') }),
+						el(ToggleControl, { label: __('Show View cart button', 'shopapp-blocks'), checked: attrs.showViewCartButton !== false, onChange: setAttr(setAttributes, 'showViewCartButton') }),
+						el(ToggleControl, { label: __('Use side cart drawer', 'shopapp-blocks'), checked: !!attrs.enableCartDrawer, onChange: setAttr(setAttributes, 'enableCartDrawer') }),
+						attrs.enableCartDrawer && el(SelectControl, {
+							label: __('Cart drawer position', 'shopapp-blocks'),
+							value: attrs.cartDrawerPosition || 'right',
+							options: [
+								{ label: __('Right', 'shopapp-blocks'), value: 'right' },
+								{ label: __('Left', 'shopapp-blocks'), value: 'left' }
+							],
+							onChange: setAttr(setAttributes, 'cartDrawerPosition')
+						})
 					),
 					el(PanelBody, { title: __('Menu items', 'shopapp-blocks'), initialOpen: false },
 						items.map(function (item, index) {

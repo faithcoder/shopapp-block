@@ -23,6 +23,21 @@ define( 'SHOPAPP_BLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SHOPAPP_BLOCKS_URL', plugin_dir_url( __FILE__ ) );
 
 /**
+ * Shows an admin notice when WooCommerce is not active.
+ */
+function shopapp_blocks_woocommerce_missing_notice() {
+	if ( class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	printf(
+		'<div class="notice notice-warning"><p>%s</p></div>',
+		esc_html__( 'ShopApp Blocks requires WooCommerce to power product, cart, checkout, and account features.', 'shopapp-blocks' )
+	);
+}
+add_action( 'admin_notices', 'shopapp_blocks_woocommerce_missing_notice' );
+
+/**
  * Registers shared block assets.
  */
 function shopapp_blocks_register_assets() {
@@ -59,8 +74,8 @@ function shopapp_blocks_register_assets() {
 		array(
 			'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 			'productsApiUrl'    => esc_url_raw( rest_url( 'wc/store/v1/products' ) ),
-			'cartUrl'           => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' ),
-			'checkoutUrl'       => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : home_url( '/' ),
+			'cartUrl'           => esc_url_raw( function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' ) ),
+			'checkoutUrl'       => esc_url_raw( function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : home_url( '/' ) ),
 			'currency'          => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$',
 			'addToCartNonce'    => wp_create_nonce( 'shopapp_blocks_add_to_cart' ),
 			'cartNonce'         => wp_create_nonce( 'shopapp_blocks_cart' ),
@@ -171,7 +186,7 @@ function shopapp_blocks_get_cart_summary() {
 		$image    = $image_id ? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' ) : wc_placeholder_img_src( 'woocommerce_thumbnail' );
 
 		$items[] = array(
-			'key'             => $cart_item_key,
+			'key'             => sanitize_key( $cart_item_key ),
 			'product_id'      => (int) $cart_item['product_id'],
 			'variation_id'    => (int) $cart_item['variation_id'],
 			'name'            => $product->get_name(),
@@ -205,9 +220,9 @@ function shopapp_blocks_get_cart_summary() {
 		'tax_html'          => wp_kses_post( wc_price( $tax_total ) ),
 		'show_tax'          => wc_tax_enabled() && $tax_total > 0,
 		'total_html'        => wp_kses_post( WC()->cart->get_total() ),
-		'applied_coupons'   => WC()->cart->get_applied_coupons(),
-		'cart_url'          => wc_get_cart_url(),
-		'checkout_url'      => wc_get_checkout_url(),
+		'applied_coupons'   => array_map( 'wc_format_coupon_code', WC()->cart->get_applied_coupons() ),
+		'cart_url'          => esc_url_raw( wc_get_cart_url() ),
+		'checkout_url'      => esc_url_raw( wc_get_checkout_url() ),
 	);
 }
 
@@ -238,8 +253,8 @@ function shopapp_blocks_ajax_add_to_cart() {
 		);
 	}
 
-	$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
-	$quantity   = isset( $_POST['quantity'] ) ? max( 1, absint( $_POST['quantity'] ) ) : 1;
+	$product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
+	$quantity   = isset( $_POST['quantity'] ) ? max( 1, absint( wp_unslash( $_POST['quantity'] ) ) ) : 1;
 
 	if ( ! $product_id ) {
 		wp_send_json_error(
@@ -260,8 +275,8 @@ function shopapp_blocks_ajax_add_to_cart() {
 	wp_send_json_success(
 		array(
 			'cart_count' => WC()->cart->get_cart_contents_count(),
-			'cart_url'   => wc_get_cart_url(),
-			'checkout'   => wc_get_checkout_url(),
+			'cart_url'   => esc_url_raw( wc_get_cart_url() ),
+			'checkout'   => esc_url_raw( wc_get_checkout_url() ),
 			'cart'       => shopapp_blocks_get_cart_summary(),
 		)
 	);
@@ -379,7 +394,7 @@ function shopapp_blocks_sanitize_saved_product_ids( $raw_ids ) {
  */
 function shopapp_blocks_ajax_sync_saved_products() {
 	check_ajax_referer( 'shopapp_blocks_navigation', 'nonce' );
-	$incoming = isset( $_POST['product_ids'] ) ? wp_unslash( $_POST['product_ids'] ) : array();
+	$incoming = isset( $_POST['product_ids'] ) ? sanitize_text_field( wp_unslash( $_POST['product_ids'] ) ) : array();
 	$ids      = shopapp_blocks_sanitize_saved_product_ids( $incoming );
 	$mode     = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'merge';
 
@@ -418,10 +433,10 @@ function shopapp_blocks_ajax_get_account_summary() {
 	if ( ! is_user_logged_in() ) {
 		wp_send_json_success(
 			array(
-				'isLoggedIn'    => false,
-				'loginUrl'      => $account_url,
-				'registerUrl'   => $account_url,
-				'lostPasswordUrl' => function_exists( 'wc_lostpassword_url' ) ? wc_lostpassword_url() : wp_lostpassword_url(),
+				'isLoggedIn'       => false,
+				'loginUrl'         => esc_url_raw( $account_url ),
+				'registerUrl'      => esc_url_raw( $account_url ),
+				'lostPasswordUrl'  => esc_url_raw( function_exists( 'wc_lostpassword_url' ) ? wc_lostpassword_url() : wp_lostpassword_url() ),
 			)
 		);
 	}
@@ -443,25 +458,25 @@ function shopapp_blocks_ajax_get_account_summary() {
 			'date'   => $order->get_date_created() ? wc_format_datetime( $order->get_date_created() ) : '',
 			'status' => wc_get_order_status_name( $order->get_status() ),
 			'total'  => wp_kses_post( $order->get_formatted_order_total() ),
-			'url'    => $order->get_view_order_url(),
+			'url'    => esc_url_raw( $order->get_view_order_url() ),
 		);
 	}
 
 	wp_send_json_success(
 		array(
 			'isLoggedIn' => true,
-			'name'       => $user->display_name,
-			'email'      => $user->user_email,
-			'avatar'     => get_avatar_url( $user->ID, array( 'size' => 96 ) ),
+			'name'       => sanitize_text_field( $user->display_name ),
+			'email'      => sanitize_email( $user->user_email ),
+			'avatar'     => esc_url_raw( get_avatar_url( $user->ID, array( 'size' => 96 ) ) ),
 			'orders'     => $order_data,
 			'links'      => array(
-				'account'  => $account_url,
-				'orders'   => wc_get_account_endpoint_url( 'orders' ),
-				'downloads' => wc_get_account_endpoint_url( 'downloads' ),
-				'addresses' => wc_get_account_endpoint_url( 'edit-address' ),
-				'details'   => wc_get_account_endpoint_url( 'edit-account' ),
-				'payments'  => wc_get_account_endpoint_url( 'payment-methods' ),
-				'logout'    => wc_logout_url(),
+				'account'   => esc_url_raw( $account_url ),
+				'orders'    => esc_url_raw( wc_get_account_endpoint_url( 'orders' ) ),
+				'downloads' => esc_url_raw( wc_get_account_endpoint_url( 'downloads' ) ),
+				'addresses' => esc_url_raw( wc_get_account_endpoint_url( 'edit-address' ) ),
+				'details'   => esc_url_raw( wc_get_account_endpoint_url( 'edit-account' ) ),
+				'payments'  => esc_url_raw( wc_get_account_endpoint_url( 'payment-methods' ) ),
+				'logout'    => esc_url_raw( wc_logout_url() ),
 			),
 		)
 	);
@@ -475,10 +490,10 @@ add_action( 'wp_ajax_nopriv_shopapp_get_account_summary', 'shopapp_blocks_ajax_g
 function shopapp_blocks_ajax_load_products() {
 	check_ajax_referer( 'shopapp_blocks_load_products', 'nonce' );
 
-	$query = isset( $_POST['query'] ) ? wp_unslash( $_POST['query'] ) : '{}';
+	$query = isset( $_POST['query'] ) ? sanitize_textarea_field( wp_unslash( $_POST['query'] ) ) : '{}';
 	$query = json_decode( (string) $query, true );
 	$query = is_array( $query ) ? $query : array();
-	$page  = isset( $_POST['page'] ) ? max( 1, absint( $_POST['page'] ) ) : 1;
+	$page  = isset( $_POST['page'] ) ? max( 1, absint( wp_unslash( $_POST['page'] ) ) ) : 1;
 
 	$query['page'] = $page;
 	$products      = shopapp_get_storefront_products( $query );

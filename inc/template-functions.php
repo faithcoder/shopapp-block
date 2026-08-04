@@ -40,7 +40,7 @@ function shopapp_format_price( $price ) {
  */
 function shopapp_format_card_price( $price ) {
 	if ( function_exists( 'wc_price' ) ) {
-		return wc_price( $price );
+		return wp_kses_post( wc_price( $price ) );
 	}
 
 	return '<span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">$</span>' . esc_html( number_format_i18n( (float) $price, 0 ) ) . '</span>';
@@ -88,7 +88,96 @@ function shopapp_icon( $name ) {
 		'zap'       => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z"/></svg>',
 	);
 
-	return $icons[ $name ] ?? '';
+	return isset( $icons[ $name ] ) ? $icons[ $name ] : '';
+}
+
+/**
+ * Sanitizes product-grid block attributes.
+ *
+ * @param array<string,mixed> $attributes Block attributes.
+ * @return array<string,mixed>
+ */
+function shopapp_sanitize_product_grid_attributes( $attributes ) {
+	$attributes = wp_parse_args(
+		$attributes,
+		array(
+			'sectionTitle'               => __( 'Curated for you', 'shopapp-blocks' ),
+			'category'                   => '',
+			'orderby'                    => 'date',
+			'perPage'                    => 12,
+			'columns'                    => 4,
+			'tabletColumns'              => 2,
+			'mobileColumns'              => 2,
+			'pagination'                 => 'load-more',
+			'showRatings'                => true,
+			'showCategory'               => true,
+			'showOnSale'                 => true,
+			'cardRadius'                 => 34,
+			'infoBackground'             => '',
+			'infoColor'                  => '',
+			'ratingStarColor'            => '',
+			'ratingTextColor'            => '',
+			'categoryColor'              => '',
+			'onSaleBackground'           => '',
+			'onSaleColor'                => '',
+			'titleColor'                 => '',
+			'priceColor'                 => '',
+			'currencyColor'              => '',
+			'addButtonBackground'        => '',
+			'addButtonColor'             => '',
+			'loadMoreBackground'         => '',
+			'loadMoreColor'              => '',
+			'paginationBackground'       => '',
+			'paginationColor'            => '',
+			'paginationActiveBackground' => '',
+			'paginationActiveColor'      => '',
+			'page'                       => 1,
+		)
+	);
+
+	$allowed_orderby    = array( 'date', 'name', 'price', 'rating', 'popularity' );
+	$allowed_pagination = array( 'load-more', 'pagination', 'none' );
+	$color_keys         = array(
+		'infoBackground',
+		'infoColor',
+		'ratingStarColor',
+		'ratingTextColor',
+		'categoryColor',
+		'onSaleBackground',
+		'onSaleColor',
+		'titleColor',
+		'priceColor',
+		'currencyColor',
+		'addButtonBackground',
+		'addButtonColor',
+		'loadMoreBackground',
+		'loadMoreColor',
+		'paginationBackground',
+		'paginationColor',
+		'paginationActiveBackground',
+		'paginationActiveColor',
+	);
+
+	$attributes['sectionTitle']  = sanitize_text_field( $attributes['sectionTitle'] );
+	$attributes['category']      = sanitize_title( $attributes['category'] );
+	$attributes['orderby']       = in_array( $attributes['orderby'], $allowed_orderby, true ) ? $attributes['orderby'] : 'date';
+	$attributes['perPage']       = max( 1, min( 48, absint( $attributes['perPage'] ) ) );
+	$attributes['columns']       = max( 1, min( 12, absint( $attributes['columns'] ) ) );
+	$attributes['tabletColumns'] = max( 1, min( 8, absint( $attributes['tabletColumns'] ) ) );
+	$attributes['mobileColumns'] = max( 1, min( 4, absint( $attributes['mobileColumns'] ) ) );
+	$attributes['pagination']    = in_array( $attributes['pagination'], $allowed_pagination, true ) ? $attributes['pagination'] : 'load-more';
+	$attributes['showRatings']   = (bool) $attributes['showRatings'];
+	$attributes['showCategory']  = (bool) $attributes['showCategory'];
+	$attributes['showOnSale']    = (bool) $attributes['showOnSale'];
+	$attributes['cardRadius']    = max( 0, min( 80, absint( $attributes['cardRadius'] ) ) );
+	$attributes['page']          = max( 1, absint( $attributes['page'] ) );
+
+	foreach ( $color_keys as $color_key ) {
+		$color                    = sanitize_hex_color( (string) $attributes[ $color_key ] );
+		$attributes[ $color_key ] = $color ? $color : '';
+	}
+
+	return $attributes;
 }
 
 /**
@@ -111,9 +200,9 @@ function shopapp_get_demo_products() {
 			'category'    => __( 'Audio', 'shopapp-blocks' ),
 			'rating'      => '4.8',
 			'badge'       => __( 'New', 'shopapp-blocks' ),
-		'colors'      => array( __( 'Black', 'shopapp-blocks' ), __( 'Sand', 'shopapp-blocks' ) ),
-		'checkoutUrl' => home_url( '/' ),
-		'on_sale'     => false,
+			'colors'      => array( __( 'Black', 'shopapp-blocks' ), __( 'Sand', 'shopapp-blocks' ) ),
+			'checkoutUrl' => esc_url_raw( home_url( '/' ) ),
+			'on_sale'     => false,
 		),
 		array(
 			'id'          => 'demo-meridian',
@@ -126,9 +215,9 @@ function shopapp_get_demo_products() {
 			'category'    => __( 'Time', 'shopapp-blocks' ),
 			'rating'      => '4.9',
 			'badge'       => '',
-		'colors'      => array( __( 'Cognac', 'shopapp-blocks' ), __( 'Steel', 'shopapp-blocks' ) ),
-		'checkoutUrl' => home_url( '/' ),
-		'on_sale'     => false,
+			'colors'      => array( __( 'Cognac', 'shopapp-blocks' ), __( 'Steel', 'shopapp-blocks' ) ),
+			'checkoutUrl' => esc_url_raw( home_url( '/' ) ),
+			'on_sale'     => false,
 		),
 		array(
 			'id'          => 'demo-range',
@@ -141,9 +230,9 @@ function shopapp_get_demo_products() {
 			'category'    => __( 'Carry', 'shopapp-blocks' ),
 			'rating'      => '4.7',
 			'badge'       => __( 'Bestseller', 'shopapp-blocks' ),
-		'colors'      => array( __( 'Olive', 'shopapp-blocks' ), __( 'Charcoal', 'shopapp-blocks' ) ),
-		'checkoutUrl' => home_url( '/' ),
-		'on_sale'     => false,
+			'colors'      => array( __( 'Olive', 'shopapp-blocks' ), __( 'Charcoal', 'shopapp-blocks' ) ),
+			'checkoutUrl' => esc_url_raw( home_url( '/' ) ),
+			'on_sale'     => false,
 		),
 		array(
 			'id'          => 'demo-kiln',
@@ -156,9 +245,9 @@ function shopapp_get_demo_products() {
 			'category'    => __( 'Home', 'shopapp-blocks' ),
 			'rating'      => '4.6',
 			'badge'       => '',
-		'colors'      => array( __( 'Terracotta', 'shopapp-blocks' ), __( 'Cream', 'shopapp-blocks' ) ),
-		'checkoutUrl' => home_url( '/' ),
-		'on_sale'     => false,
+			'colors'      => array( __( 'Terracotta', 'shopapp-blocks' ), __( 'Cream', 'shopapp-blocks' ) ),
+			'checkoutUrl' => esc_url_raw( home_url( '/' ) ),
+			'on_sale'     => false,
 		),
 	);
 }
@@ -192,8 +281,8 @@ function shopapp_get_product_data( $product ) {
 		'rating'      => $product->get_average_rating() ? number_format_i18n( (float) $product->get_average_rating(), 1 ) : '4.8',
 		'badge'       => $product->is_featured() ? __( 'Bestseller', 'shopapp-blocks' ) : '',
 		'colors'      => shopapp_get_product_color_labels( $product ),
-		'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : home_url( '/' ),
-		'permalink'   => $product->get_permalink(),
+		'checkoutUrl' => esc_url_raw( function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : home_url( '/' ) ),
+		'permalink'   => esc_url_raw( $product->get_permalink() ),
 		'type'        => $product->get_type(),
 		'on_sale'     => $on_sale,
 	);
@@ -224,6 +313,7 @@ function shopapp_add_color_var( $css, $property, $value ) {
  * @return string
  */
 function shopapp_get_product_grid_style( $attributes ) {
+	$attributes = shopapp_sanitize_product_grid_attributes( $attributes );
 	$style  = '--shopapp-grid-columns:' . max( 1, min( 12, (int) $attributes['columns'] ) ) . ';';
 	$style .= '--shopapp-tablet-columns:' . max( 1, min( 8, (int) $attributes['tabletColumns'] ) ) . ';';
 	$style .= '--shopapp-mobile-columns:' . max( 1, min( 4, (int) $attributes['mobileColumns'] ) ) . ';';
@@ -331,9 +421,10 @@ function shopapp_get_storefront_products( $attributes ) {
 		return shopapp_get_demo_products();
 	}
 
-	$orderby = sanitize_key( $attributes['orderby'] ?? 'date' );
-	$per_page = max( 1, (int) ( $attributes['perPage'] ?? 12 ) );
-	$page     = max( 1, (int) ( $attributes['page'] ?? 1 ) );
+	$attributes = shopapp_sanitize_product_grid_attributes( $attributes );
+	$orderby    = $attributes['orderby'];
+	$per_page   = $attributes['perPage'];
+	$page       = $attributes['page'];
 	$args     = array(
 		'limit'  => $per_page,
 		'page'   => $page,
@@ -389,6 +480,7 @@ function shopapp_count_storefront_products( $attributes ) {
 		return count( shopapp_get_demo_products() );
 	}
 
+	$attributes = shopapp_sanitize_product_grid_attributes( $attributes );
 	$args = array(
 		'status' => 'publish',
 		'limit'  => -1,
@@ -522,12 +614,132 @@ function shopapp_sanitize_checkout_menu_items( $items ) {
 }
 
 /**
+ * Sanitizes search-filter block attributes.
+ *
+ * @param array<string,mixed> $attributes Block attributes.
+ * @return array<string,mixed>
+ */
+function shopapp_sanitize_search_filter_attributes( $attributes ) {
+	$attributes = wp_parse_args(
+		$attributes,
+		array(
+			'brand'       => __( 'Northbound', 'shopapp-blocks' ),
+			'greeting'    => __( 'Good morning, Alex', 'shopapp-blocks' ),
+			'placeholder' => __( 'Search essentials', 'shopapp-blocks' ),
+			'showHeader'  => true,
+			'showSearch'  => true,
+			'showFilters' => true,
+		)
+	);
+
+	$attributes['brand']       = sanitize_text_field( $attributes['brand'] );
+	$attributes['greeting']    = sanitize_text_field( $attributes['greeting'] );
+	$attributes['placeholder'] = sanitize_text_field( $attributes['placeholder'] );
+	$attributes['showHeader']  = (bool) $attributes['showHeader'];
+	$attributes['showSearch']  = (bool) $attributes['showSearch'];
+	$attributes['showFilters'] = (bool) $attributes['showFilters'];
+
+	return $attributes;
+}
+
+/**
+ * Sanitizes checkout-bar block attributes.
+ *
+ * @param array<string,mixed> $attributes Block attributes.
+ * @return array<string,mixed>
+ */
+function shopapp_sanitize_checkout_bar_attributes( $attributes ) {
+	$attributes = wp_parse_args(
+		$attributes,
+		array(
+			'showLabels'         => true,
+			'showCart'           => true,
+			'showViewCartButton' => true,
+			'enableCartDrawer'   => false,
+			'cartDrawerPosition' => 'right',
+			'menuItems'          => array(),
+			'width'              => 660,
+			'height'             => 88,
+			'padding'            => 10,
+			'gap'                => 8,
+			'borderRadius'       => 38,
+			'borderWidth'        => 1,
+			'blur'               => 20,
+			'saturate'           => 160,
+			'opacity'            => 94,
+			'zIndex'             => 30,
+			'iconSize'           => 31,
+			'labelSize'          => 14,
+			'labelWeight'        => 800,
+			'cartSize'           => 88,
+			'cartIconSize'       => 39,
+			'cartOffsetY'        => -50,
+			'enableBuzz'         => true,
+			'backgroundColor'    => '',
+			'textColor'          => '',
+			'borderColor'        => '',
+			'iconColor'          => '',
+			'labelColor'         => '',
+			'activeColor'        => '',
+			'cartBackground'     => '',
+			'cartColor'          => '',
+			'countBackground'    => '',
+			'countColor'         => '',
+		)
+	);
+	$color_keys = array(
+		'backgroundColor',
+		'textColor',
+		'borderColor',
+		'iconColor',
+		'labelColor',
+		'activeColor',
+		'cartBackground',
+		'cartColor',
+		'countBackground',
+		'countColor',
+	);
+
+	$attributes['showLabels']         = (bool) $attributes['showLabels'];
+	$attributes['showCart']           = (bool) $attributes['showCart'];
+	$attributes['showViewCartButton'] = (bool) $attributes['showViewCartButton'];
+	$attributes['enableCartDrawer']   = (bool) $attributes['enableCartDrawer'];
+	$attributes['cartDrawerPosition'] = 'left' === sanitize_key( $attributes['cartDrawerPosition'] ) ? 'left' : 'right';
+	$attributes['menuItems']          = shopapp_sanitize_checkout_menu_items( $attributes['menuItems'] );
+	$attributes['width']        = max( 240, min( 1400, absint( $attributes['width'] ) ) );
+	$attributes['height']       = max( 56, min( 220, absint( $attributes['height'] ) ) );
+	$attributes['padding']      = max( 0, min( 48, absint( $attributes['padding'] ) ) );
+	$attributes['gap']          = max( 0, min( 40, absint( $attributes['gap'] ) ) );
+	$attributes['borderRadius'] = max( 0, min( 120, absint( $attributes['borderRadius'] ) ) );
+	$attributes['borderWidth']  = max( 0, min( 12, absint( $attributes['borderWidth'] ) ) );
+	$attributes['blur']         = max( 0, min( 60, absint( $attributes['blur'] ) ) );
+	$attributes['saturate']     = max( 0, min( 300, absint( $attributes['saturate'] ) ) );
+	$attributes['opacity']      = max( 0, min( 100, absint( $attributes['opacity'] ) ) );
+	$attributes['zIndex']       = max( 1, min( 9999, absint( $attributes['zIndex'] ) ) );
+	$attributes['iconSize']     = max( 12, min( 80, absint( $attributes['iconSize'] ) ) );
+	$attributes['labelSize']    = max( 10, min( 32, absint( $attributes['labelSize'] ) ) );
+	$attributes['labelWeight']  = max( 100, min( 900, absint( $attributes['labelWeight'] ) ) );
+	$attributes['cartSize']     = max( 48, min( 160, absint( $attributes['cartSize'] ) ) );
+	$attributes['cartIconSize'] = max( 18, min( 96, absint( $attributes['cartIconSize'] ) ) );
+	$attributes['cartOffsetY']  = max( -140, min( 80, (int) $attributes['cartOffsetY'] ) );
+	$attributes['enableBuzz']   = (bool) $attributes['enableBuzz'];
+
+	foreach ( $color_keys as $color_key ) {
+		$color                    = sanitize_hex_color( (string) $attributes[ $color_key ] );
+		$attributes[ $color_key ] = $color ? $color : '';
+	}
+
+	return $attributes;
+}
+
+/**
  * Builds checkout-bar inline style variables.
  *
  * @param array<string,mixed> $attributes Block attributes.
  * @return string
  */
 function shopapp_get_checkout_bar_style( $attributes ) {
+	$attributes = shopapp_sanitize_checkout_bar_attributes( $attributes );
 	$opacity = max( 0, min( 100, (int) $attributes['opacity'] ) ) / 100;
 	$style  = '--shopapp-checkout-width:' . max( 240, min( 1400, (int) $attributes['width'] ) ) . 'px;';
 	$style .= '--shopapp-checkout-height:' . max( 56, min( 220, (int) $attributes['height'] ) ) . 'px;';
@@ -567,41 +779,7 @@ function shopapp_get_checkout_bar_style( $attributes ) {
  * @return string
  */
 function shopapp_render_storefront( $attributes = array() ) {
-	$attributes = wp_parse_args(
-		$attributes,
-		array(
-			'sectionTitle'   => __( 'Curated for you', 'shopapp-blocks' ),
-			'category'       => '',
-			'orderby'        => 'date',
-			'perPage'        => 12,
-			'columns'        => 4,
-			'tabletColumns'  => 2,
-			'mobileColumns'  => 2,
-			'pagination'     => 'load-more',
-			'showRatings'    => true,
-			'showCategory'   => true,
-			'showOnSale'     => true,
-			'cardRadius'     => 34,
-			'infoBackground' => '',
-			'infoColor'      => '',
-			'ratingStarColor' => '',
-			'ratingTextColor' => '',
-			'categoryColor'  => '',
-			'onSaleBackground' => '',
-			'onSaleColor'    => '',
-			'titleColor'     => '',
-			'priceColor'     => '',
-			'currencyColor'  => '',
-			'addButtonBackground' => '',
-			'addButtonColor' => '',
-			'loadMoreBackground' => '',
-			'loadMoreColor'  => '',
-			'paginationBackground' => '',
-			'paginationColor' => '',
-			'paginationActiveBackground' => '',
-			'paginationActiveColor' => '',
-		)
-	);
+	$attributes = shopapp_sanitize_product_grid_attributes( $attributes );
 
 	$total        = shopapp_count_storefront_products( $attributes );
 	$max_pages    = (int) ceil( $total / max( 1, (int) $attributes['perPage'] ) );
@@ -662,13 +840,14 @@ function shopapp_render_storefront( $attributes = array() ) {
  * @return void
  */
 function shopapp_render_product_card( $product, $attributes = array() ) {
-	$product_json = wp_json_encode( $product );
+	$product_json  = wp_json_encode( $product );
 	$show_ratings = ! isset( $attributes['showRatings'] ) || (bool) $attributes['showRatings'];
 	$show_category = ! isset( $attributes['showCategory'] ) || (bool) $attributes['showCategory'];
 	$show_on_sale = ! isset( $attributes['showOnSale'] ) || (bool) $attributes['showOnSale'];
+	$product_url  = ! empty( $product['permalink'] ) ? $product['permalink'] : '';
 	?>
 	<article class="shopapp-product-card" data-shopapp-category="<?php echo esc_attr( sanitize_title( $product['category'] ) ); ?>" data-shopapp-product="<?php echo esc_attr( $product_json ); ?>">
-		<button class="shopapp-product-card__media" type="button" data-shopapp-open-product>
+		<a class="shopapp-product-card__media" href="<?php echo esc_url( $product_url ? $product_url : '#' ); ?>" data-shopapp-open-product>
 			<img src="<?php echo esc_url( $product['image'] ); ?>" alt="<?php echo esc_attr( $product['name'] ); ?>" loading="lazy">
 			<?php if ( $show_on_sale && ! empty( $product['on_sale'] ) ) : ?>
 				<span class="shopapp-badge shopapp-badge--sale"><?php esc_html_e( 'On Sale', 'shopapp-blocks' ); ?></span>
@@ -676,7 +855,7 @@ function shopapp_render_product_card( $product, $attributes = array() ) {
 			<?php if ( ! empty( $product['badge'] ) ) : ?>
 				<span class="shopapp-badge"><?php echo esc_html( $product['badge'] ); ?></span>
 			<?php endif; ?>
-		</button>
+		</a>
 		<?php if ( is_numeric( $product['id'] ) ) : ?>
 			<button class="shopapp-card-save" type="button" data-shopapp-save data-product-id="<?php echo esc_attr( $product['id'] ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Save %s', 'shopapp-blocks' ), $product['name'] ) ); ?>" aria-pressed="false"><?php echo shopapp_icon( 'heart' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 		<?php endif; ?>
@@ -694,7 +873,7 @@ function shopapp_render_product_card( $product, $attributes = array() ) {
 					<?php endif; ?>
 				</p>
 			<?php endif; ?>
-			<h3><button type="button" data-shopapp-open-product><?php echo esc_html( $product['name'] ); ?></button></h3>
+			<h3><a href="<?php echo esc_url( $product_url ? $product_url : '#' ); ?>" data-shopapp-open-product><?php echo esc_html( $product['name'] ); ?></a></h3>
 			<p class="shopapp-price"><?php echo wp_kses_post( $product['price_html'] ); ?></p>
 			<button class="shopapp-card-add" type="button" data-shopapp-add data-product-id="<?php echo esc_attr( $product['id'] ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Add %s to bag', 'shopapp-blocks' ), $product['name'] ) ); ?>"><?php echo shopapp_icon( 'plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 		</div>
@@ -709,18 +888,8 @@ function shopapp_render_product_card( $product, $attributes = array() ) {
  * @return string
  */
 function shopapp_render_search_filters( $attributes = array() ) {
-	$attributes = wp_parse_args(
-		$attributes,
-		array(
-			'brand'       => __( 'Northbound', 'shopapp-blocks' ),
-			'greeting'    => __( 'Good morning, Alex', 'shopapp-blocks' ),
-			'placeholder' => __( 'Search essentials', 'shopapp-blocks' ),
-			'showHeader'  => true,
-			'showSearch'  => true,
-			'showFilters' => true,
-		)
-	);
-	$options = shopapp_get_product_category_options();
+	$attributes    = shopapp_sanitize_search_filter_attributes( $attributes );
+	$options       = shopapp_get_product_category_options();
 	$wrapper_attrs = get_block_wrapper_attributes( array( 'class' => 'shopapp-storefront shopapp-search-filter-block alignfull' ) );
 
 	ob_start();
@@ -766,43 +935,9 @@ function shopapp_render_search_filters( $attributes = array() ) {
  * @return string
  */
 function shopapp_render_bottom_nav( $attributes = array() ) {
-	$attributes = wp_parse_args(
-		$attributes,
-		array(
-			'showLabels'       => true,
-			'showCart'         => true,
-			'menuItems'        => array(),
-			'width'            => 660,
-			'height'           => 88,
-			'padding'          => 10,
-			'gap'              => 8,
-			'borderRadius'     => 38,
-			'borderWidth'      => 1,
-			'blur'             => 20,
-			'saturate'         => 160,
-			'opacity'          => 94,
-			'zIndex'           => 30,
-			'iconSize'         => 31,
-			'labelSize'        => 14,
-			'labelWeight'      => 800,
-			'cartSize'         => 88,
-			'cartIconSize'     => 39,
-			'cartOffsetY'      => -50,
-			'enableBuzz'       => true,
-			'backgroundColor'  => '',
-			'textColor'        => '',
-			'borderColor'      => '',
-			'iconColor'        => '',
-			'labelColor'       => '',
-			'activeColor'      => '',
-			'cartBackground'   => '',
-			'cartColor'        => '',
-			'countBackground'  => '',
-			'countColor'       => '',
-		)
-	);
+	$attributes   = shopapp_sanitize_checkout_bar_attributes( $attributes );
 	$checkout_url = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : home_url( '/' );
-	$menu_items   = shopapp_sanitize_checkout_menu_items( $attributes['menuItems'] );
+	$menu_items   = $attributes['menuItems'];
 	$menu_items   = array_values(
 		array_filter(
 			$menu_items,
@@ -835,7 +970,14 @@ function shopapp_render_bottom_nav( $attributes = array() ) {
 				<?php shopapp_render_checkout_menu_item( $menu_item, (bool) $attributes['showLabels'] ); ?>
 			<?php endforeach; ?>
 		</nav>
-		<?php shopapp_render_quick_checkout( $checkout_url ); ?>
+		<?php
+		shopapp_render_quick_checkout(
+			$checkout_url,
+			(bool) $attributes['showViewCartButton'],
+			(bool) $attributes['enableCartDrawer'],
+			$attributes['cartDrawerPosition']
+		);
+		?>
 		<?php shopapp_render_nav_popup(); ?>
 	</section>
 	<?php
@@ -912,12 +1054,26 @@ function shopapp_render_product_sheet() {
 /**
  * Renders quick checkout drawer.
  *
- * @param string $checkout_url WooCommerce checkout URL.
+ * @param string $checkout_url          WooCommerce checkout URL.
+ * @param bool   $show_view_cart_button Whether to show the View cart link.
+ * @param bool   $enable_cart_drawer    Whether to use a side drawer instead of the default bottom popup.
+ * @param string $cart_drawer_position  Side drawer position.
  */
-function shopapp_render_quick_checkout( $checkout_url ) {
-	$cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' );
+function shopapp_render_quick_checkout(
+	$checkout_url,
+	$show_view_cart_button = true,
+	$enable_cart_drawer = false,
+	$cart_drawer_position = 'right'
+) {
+	$cart_url             = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' );
+	$cart_drawer_position = 'left' === $cart_drawer_position ? 'left' : 'right';
+	$classes              = 'shopapp-checkout';
+
+	if ( $enable_cart_drawer ) {
+		$classes .= ' shopapp-cart-drawer shopapp-cart-drawer--' . $cart_drawer_position;
+	}
 	?>
-	<div class="shopapp-checkout" data-shopapp-checkout hidden>
+	<div class="<?php echo esc_attr( $classes ); ?>" data-shopapp-checkout hidden>
 		<div class="shopapp-checkout__overlay" data-shopapp-close-checkout></div>
 		<div class="shopapp-checkout__panel" role="dialog" aria-modal="true" aria-labelledby="shopapp-checkout-title">
 			<div class="shopapp-sheet__handle"></div>
@@ -940,7 +1096,9 @@ function shopapp_render_quick_checkout( $checkout_url ) {
 				</dl>
 				<div class="shopapp-checkout__actions">
 					<a class="shopapp-button shopapp-button--ember shopapp-checkout__pay" data-shopapp-checkout-link href="<?php echo esc_url( $checkout_url ); ?>"><?php echo shopapp_icon( 'shield' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> <span><?php esc_html_e( 'Proceed to checkout', 'shopapp-blocks' ); ?></span></a>
+					<?php if ( $show_view_cart_button ) : ?>
 					<a class="shopapp-button shopapp-checkout__cart-link" data-shopapp-cart-link href="<?php echo esc_url( $cart_url ); ?>"><?php esc_html_e( 'View cart', 'shopapp-blocks' ); ?></a>
+					<?php endif; ?>
 					<button class="shopapp-checkout__continue" type="button" data-shopapp-continue><?php esc_html_e( 'Continue shopping', 'shopapp-blocks' ); ?></button>
 				</div>
 				<p class="shopapp-checkout__note"><?php esc_html_e( 'Shipping, taxes, and payment methods are finalized at checkout.', 'shopapp-blocks' ); ?></p>

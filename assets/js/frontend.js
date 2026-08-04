@@ -719,6 +719,7 @@
 		var card = target.closest ? target.closest('.shopapp-product-card') : null;
 
 		if (target.closest('[data-shopapp-open-product]') && card) {
+			event.preventDefault();
 			openProduct(parseProduct(card));
 		}
 		if (target.closest('[data-shopapp-add]') && card) {
